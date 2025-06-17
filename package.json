@@ -1,0 +1,19 @@
+{
+  "name": "lab-fisika-dasar",
+  "type": "project",
+  "description": "Website Laboratorium Fisika Dasar",
+  "keywords": ["laravel", "laboratorium", "fisika", "tailwind"],
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build-css": "tailwindcss -i ./resources/css/input.css -o ./public/css/style.css --watch",
+    "build-css-prod": "tailwindcss -i ./resources/css/input.css -o ./public/css/style.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16"
+  }
+}

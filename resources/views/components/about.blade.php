@@ -7,10 +7,10 @@
                 Tentang Laboratorium
             </div>
             <h2 class="font-poppins text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Laboratorium <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Fisika Dasar</span>
+                Laboratorium <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{{ $profil->namaLaboratorium ?? 'Fisika Dasar' }}</span>
             </h2>
             <p class="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-                Laboratorium Fisika Dasar merupakan fasilitas unggulan yang berkomitmen untuk mengembangkan penelitian dan pendidikan di bidang fisika dengan teknologi terdepan.
+                {{ $profil->tentangLaboratorium }}
             </p>
         </div>
 
@@ -31,7 +31,7 @@
                 <div>
                     <h3 class="text-3xl font-bold text-blue-600 mb-4">Visi Kami</h3>
                     <p class="text-gray-700 text-lg leading-relaxed">
-                        Menjadi laboratorium fisika terdepan di Indonesia yang berkontribusi dalam penelitian dan pengembangan ilmu fisika untuk kemajuan bangsa.
+                        {{ $profil->visi }}
                     </p>
                 </div>
 
@@ -39,24 +39,14 @@
                 <div>
                     <h3 class="text-3xl font-bold text-blue-600 mb-6">Misi Kami</h3>
                     <div class="space-y-4">
+                        @foreach($misis as $misi)
                         <div class="flex items-start space-x-3">
                             <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <i class="fas fa-check text-white text-xs"></i>
                             </div>
-                            <span class="text-gray-700 text-lg">Menyediakan fasilitas penelitian fisika berkualitas tinggi</span>
+                            <span class="text-gray-700 text-lg">{{ $misi->pointMisi }}</span>
                         </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-gray-700 text-lg">Mengembangkan sumber daya manusia di bidang fisika</span>
-                        </div>
-                        <div class="flex items-start space-x-3">
-                            <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-gray-700 text-lg">Berkolaborasi dalam penelitian bertaraf internasional</span>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>

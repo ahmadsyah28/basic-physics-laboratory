@@ -26,7 +26,7 @@
                 <div class="flex items-center space-x-8">
                     <a href="{{ route('home') }}#visi-misi" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Beranda</a>
                     <a href="{{ route('staff') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Staf dan Tenaga Ahli</a>
-
+                    <a href="{{ route('articles.index') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Artikel</a>
 
                     <!-- Layanan Dropdown - Simple -->
                     <div class="relative group">
@@ -71,7 +71,7 @@
         <div class="px-2 pt-2 pb-3 space-y-1 mobile-menu-bg bg-black/90 backdrop-blur-md">
             <a href="{{ route('home') }}#visi-misi" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Beranda</a>
             <a href="{{ route('staff') }}" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Staf dan Tenaga Ahli</a>
-
+            <a href="{{ route('articles.index') }}" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Artikel</a>
 
             <!-- Mobile Layanan - Simple -->
             <div class="mobile-dropdown">
@@ -207,5 +207,28 @@ document.addEventListener('DOMContentLoaded', function() {
             mobileMenu.classList.add('hidden');
         }
     });
+
+    // Highlight active menu based on current page
+    function highlightActiveMenu() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        // Remove active class from all links
+        [...navLinks, ...mobileNavLinks].forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Add active class to current page link
+        [...navLinks, ...mobileNavLinks].forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && (currentPath === href || currentPath.startsWith(href + '/'))) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    // Highlight active menu on page load
+    highlightActiveMenu();
 });
 </script>

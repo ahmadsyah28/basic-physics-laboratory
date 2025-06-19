@@ -1,6 +1,6 @@
-<section class="relative min-h-screen flex items-center justify-center overflow-visible">
+<section class="relative min-h-screen flex items-center justify-center overflow-visible w-full h-full">
     <!-- Background Image with Blur -->
-    <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 z-0 overflow-hidden w-full max-w-full">
         <!-- Background Image -->
         <div class="absolute inset-0 bg-cover bg-center bg-no-repeat filter blur-sm scale-110"
              style="background-image: url('{{ asset('images/fisika-1.jpeg') }}');">

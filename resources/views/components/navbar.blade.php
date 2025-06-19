@@ -26,8 +26,28 @@
                 <div class="flex items-center space-x-8">
                     <a href="{{ route('home') }}#visi-misi" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Beranda</a>
                     <a href="{{ route('staff') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Staf dan Tenaga Ahli</a>
-                    <a href="{{ route('home') }}#fasilitas" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
-                    <a href="{{ route('home') }}#layanan" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Layanan</a>
+                    <a href="{{ route('facilities') }}#fasilitas" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
+
+                    <!-- Layanan Dropdown - Simple -->
+                    <div class="relative group">
+                        <button class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200 flex items-center">
+                            Layanan
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
+                        </button>
+
+                        <!-- Simple Dropdown Menu -->
+                        <div class="absolute top-full left-0 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 mt-2">
+                            <div class="py-2">
+                                <a href="{{ route('equipment.loan') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                    Peminjaman Alat
+                                </a>
+                                <a href="{{ route('testing.services') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                    Layanan Pengujian
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <a href="{{ route('home') }}#kontak" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Kontak</a>
                 </div>
             </div>
@@ -51,8 +71,24 @@
         <div class="px-2 pt-2 pb-3 space-y-1 mobile-menu-bg bg-black/90 backdrop-blur-md">
             <a href="{{ route('home') }}#visi-misi" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Beranda</a>
             <a href="{{ route('staff') }}" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Staf dan Tenaga Ahli</a>
-            <a href="{{ route('home') }}#fasilitas" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Fasilitas</a>
-            <a href="{{ route('home') }}#layanan" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Layanan</a>
+            <a href="{{ route('facilities') }}#fasilitas" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Fasilitas</a>
+
+            <!-- Mobile Layanan - Simple -->
+            <div class="mobile-dropdown">
+                <button class="mobile-dropdown-btn w-full text-left px-3 py-2 text-white hover:text-yellow-400 font-medium flex items-center justify-between">
+                    Layanan
+                    <i class="fas fa-chevron-down text-sm"></i>
+                </button>
+                <div class="mobile-dropdown-content hidden pl-6 space-y-1">
+                    <a href="{{ route('equipment.loan') }}" class="mobile-nav-link block px-3 py-2 text-gray-300 hover:text-yellow-400">
+                        Peminjaman Alat
+                    </a>
+                    <a href="{{ route('testing.services') }}" class="mobile-nav-link block px-3 py-2 text-gray-300 hover:text-yellow-400">
+                        Layanan Pengujian
+                    </a>
+                </div>
+            </div>
+
             <a href="{{ route('home') }}#kontak" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Kontak</a>
         </div>
     </div>
@@ -68,11 +104,11 @@
 
 /* Navbar text colors when scrolled */
 .navbar-scrolled .nav-link {
-    color: #1f2937 !important; /* text-gray-800 */
+    color: #1f2937 !important;
 }
 
 .navbar-scrolled .nav-link:hover {
-    color: #3b82f6 !important; /* text-blue-500 */
+    color: #3b82f6 !important;
 }
 
 .navbar-scrolled .mobile-menu-button {
@@ -97,13 +133,79 @@
     color: #3b82f6 !important;
 }
 
+/* Simple dropdown styling */
+.navbar-scrolled .group:hover > div {
+    background: rgba(255, 255, 255, 0.98);
+}
+
 /* Active page indicator */
 .nav-link.active {
-    color: #fbbf24 !important; /* text-yellow-400 */
+    color: #fbbf24 !important;
     font-weight: 600;
 }
 
 .navbar-scrolled .nav-link.active {
-    color: #3b82f6 !important; /* text-blue-500 when scrolled */
+    color: #3b82f6 !important;
+}
+
+/* Mobile dropdown simple styling */
+.mobile-dropdown-content.show {
+    display: block !important;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuButton.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Simple mobile dropdown
+    const mobileDropdownBtn = document.querySelector('.mobile-dropdown-btn');
+    const mobileDropdownContent = document.querySelector('.mobile-dropdown-content');
+
+    if (mobileDropdownBtn && mobileDropdownContent) {
+        mobileDropdownBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            mobileDropdownContent.classList.toggle('hidden');
+        });
+    }
+
+    // Navbar scroll effect
+    function handleNavbarScroll() {
+        const navbar = document.getElementById('navbar');
+        const logoWhite = document.getElementById('logo-white');
+        const logoDark = document.getElementById('logo-dark');
+
+        if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+            if (logoWhite && logoDark) {
+                logoWhite.style.opacity = '0';
+                logoDark.style.opacity = '1';
+            }
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+            if (logoWhite && logoDark) {
+                logoWhite.style.opacity = '1';
+                logoDark.style.opacity = '0';
+            }
+        }
+    }
+
+    handleNavbarScroll();
+    window.addEventListener('scroll', handleNavbarScroll);
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const isClickInsideNav = mobileMenu.contains(event.target) || mobileMenuButton.contains(event.target);
+
+        if (!isClickInsideNav && !mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+        }
+    });
+});
+</script>

@@ -26,13 +26,7 @@ class StaffController extends Controller
                     'Mathematical Physics',
                     'Scientific Computing'
                 ],
-                'publications' => [
-                    'Quantum Simulation Methods in Condensed Matter Physics (2023)',
-                    'Advanced Computational Techniques in Modern Physics (2022)',
-                    'Mathematical Foundations of Quantum Computing (2021)'
-                ],
-                'expertise' => ['Penelitian', 'Supervisi', 'Konsultasi'],
-                'email' => 'ahmad.rahman@unsyiah.ac.id',
+                'email' => 'nasrullah@unsyiah.ac.id',
                 'phone' => '+62-651-123456',
                 'office' => 'Lab Fisika Dasar, Ruang 101',
                 'office_hours' => 'Senin-Jumat, 09:00-15:00',
@@ -63,12 +57,6 @@ class StaffController extends Controller
                     'Semiconductor Physics',
                     'Energy Materials'
                 ],
-                'publications' => [
-                    'Advances in Nanomaterial Applications (2023)',
-                    'Semiconductor Quantum Dots for Solar Cells (2022)',
-                    'Material Science in Renewable Energy (2021)'
-                ],
-                'expertise' => ['Material Science', 'Pengajaran', 'Analisis Sampel'],
                 'email' => 'siti.nurhaliza@unsyiah.ac.id',
                 'phone' => '+62-651-123457',
                 'office' => 'Lab Fisika Dasar, Ruang 102',
@@ -99,12 +87,6 @@ class StaffController extends Controller
                     'Semiconductor Physics',
                     'Energy Materials'
                 ],
-                'publications' => [
-                    'Advances in Nanomaterial Applications (2023)',
-                    'Semiconductor Quantum Dots for Solar Cells (2022)',
-                    'Material Science in Renewable Energy (2021)'
-                ],
-                'expertise' => ['Material Science', 'Pengajaran', 'Analisis Sampel'],
                 'email' => 'siti.nurhaliza@unsyiah.ac.id',
                 'phone' => '+62-651-123457',
                 'office' => 'Lab Fisika Dasar, Ruang 102',
@@ -135,11 +117,6 @@ class StaffController extends Controller
                     'Quality Control',
                     'Laboratory Standards'
                 ],
-                'publications' => [
-                    'Panduan Kalibrasi Peralatan Lab Fisika (2023)',
-                    'Maintenance Protokol untuk Instrumen Presisi (2022)'
-                ],
-                'expertise' => ['Maintenance', 'Kalibrasi', 'Training', 'Quality Assurance'],
                 'email' => 'muhammad.iqbal@unsyiah.ac.id',
                 'phone' => '+62-651-123458',
                 'office' => 'Workshop Lab, Ruang A05',
@@ -167,11 +144,6 @@ class StaffController extends Controller
                     'Student Assessment',
                     'Lab Safety Protocols'
                 ],
-                'publications' => [
-                    'Effective Teaching Methods in Physics Laboratory (2023)',
-                    'Student Assessment in Practical Physics (2022)'
-                ],
-                'expertise' => ['Praktikum', 'Administrasi', 'Support', 'Teaching Assistant'],
                 'email' => 'dewi.sartika@unsyiah.ac.id',
                 'phone' => '+62-651-123461',
                 'office' => 'Lab Fisika Dasar, Front Desk',
@@ -192,7 +164,6 @@ class StaffController extends Controller
             'technicians' => count(array_filter($staff, fn($s) => $s['category'] === 'technician')),
             'researchers' => count(array_filter($staff, fn($s) => $s['category'] === 'researcher')),
             'total_experience' => array_sum(array_map(fn($s) => (int) explode('+', $s['experience'])[0], $staff)),
-            'total_publications' => array_sum(array_map(fn($s) => count($s['publications']), $staff))
         ];
 
         return view('staff', compact('staff', 'stats'));

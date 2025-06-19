@@ -26,7 +26,7 @@
                 <div class="flex items-center space-x-8">
                     <a href="{{ route('home') }}#visi-misi" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Beranda</a>
                     <a href="{{ route('staff') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Staf dan Tenaga Ahli</a>
-                    <a href="{{ route('facilities') }}#fasilitas" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
+
 
                     <!-- Layanan Dropdown - Simple -->
                     <div class="relative group">
@@ -47,8 +47,8 @@
                             </div>
                         </div>
                     </div>
+                    <a href="{{ route('facilities') }}#fasilitas" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
 
-                    <a href="{{ route('home') }}#kontak" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Kontak</a>
                 </div>
             </div>
 
@@ -71,7 +71,7 @@
         <div class="px-2 pt-2 pb-3 space-y-1 mobile-menu-bg bg-black/90 backdrop-blur-md">
             <a href="{{ route('home') }}#visi-misi" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Beranda</a>
             <a href="{{ route('staff') }}" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Staf dan Tenaga Ahli</a>
-            <a href="{{ route('facilities') }}#fasilitas" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Fasilitas</a>
+
 
             <!-- Mobile Layanan - Simple -->
             <div class="mobile-dropdown">
@@ -88,8 +88,8 @@
                     </a>
                 </div>
             </div>
+            <a href="{{ route('facilities') }}#fasilitas" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Fasilitas</a>
 
-            <a href="{{ route('home') }}#kontak" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Kontak</a>
         </div>
     </div>
 </nav>

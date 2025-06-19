@@ -1234,6 +1234,10 @@ p, span, div {
   max-width: none;
 }
 
+.max-w-full {
+  max-width: 100%;
+}
+
 .flex-1 {
   flex: 1 1 0%;
 }

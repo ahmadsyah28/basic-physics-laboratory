@@ -13,8 +13,7 @@ class TestingServicesController extends Controller
                 'id' => 1,
                 'name' => 'Analisis Spektroskopi UV-Vis',
                 'category' => 'Spektroskopi',
-                'image' => 'spectroscopy-uv.jpg',
-                'price_range' => 'Rp 150.000 - Rp 300.000',
+                'image' => 'spectroscopy-uv.jpeg',
                 'duration' => '2-3 hari kerja',
                 'description' => 'Analisis kualitatif dan kuantitatif sampel menggunakan spektrofotometer UV-Vis untuk identifikasi senyawa dan penentuan konsentrasi.',
                 'applications' => [
@@ -38,7 +37,6 @@ class TestingServicesController extends Controller
                 'name' => 'Pengujian Sifat Mekanik Material',
                 'category' => 'Mekanik',
                 'image' => 'mechanical-testing.jpg',
-                'price_range' => 'Rp 200.000 - Rp 500.000',
                 'duration' => '3-5 hari kerja',
                 'description' => 'Pengujian sifat mekanik material meliputi uji tarik, tekan, lentur, dan kekerasan sesuai standar ASTM dan ISO.',
                 'applications' => [
@@ -61,8 +59,7 @@ class TestingServicesController extends Controller
                 'id' => 3,
                 'name' => 'Karakterisasi Termal DSC/TGA',
                 'category' => 'Termal',
-                'image' => 'thermal-analysis.jpg',
-                'price_range' => 'Rp 250.000 - Rp 400.000',
+                'image' => 'thermal-analysis.jpeg',
                 'duration' => '3-4 hari kerja',
                 'description' => 'Analisis sifat termal material menggunakan DSC (Differential Scanning Calorimetry) dan TGA (Thermogravimetric Analysis).',
                 'applications' => [
@@ -85,8 +82,7 @@ class TestingServicesController extends Controller
                 'id' => 4,
                 'name' => 'Analisis Struktur Kristal XRD',
                 'category' => 'Difraksi',
-                'image' => 'xrd-analysis.jpg',
-                'price_range' => 'Rp 300.000 - Rp 600.000',
+                'image' => 'xrd-analysis.jpeg',
                 'duration' => '4-6 hari kerja',
                 'description' => 'Analisis struktur kristal dan identifikasi fase menggunakan X-Ray Diffraction (XRD) untuk material kristalin dan amorf.',
                 'applications' => [
@@ -109,8 +105,7 @@ class TestingServicesController extends Controller
                 'id' => 5,
                 'name' => 'Pengujian Konduktivitas Listrik',
                 'category' => 'Elektronik',
-                'image' => 'conductivity-test.jpg',
-                'price_range' => 'Rp 100.000 - Rp 250.000',
+                'image' => 'conductivity-test.jpeg',
                 'duration' => '1-2 hari kerja',
                 'description' => 'Pengukuran konduktivitas dan resistivitas listrik material pada berbagai kondisi suhu dan frekuensi.',
                 'applications' => [
@@ -133,8 +128,7 @@ class TestingServicesController extends Controller
                 'id' => 6,
                 'name' => 'Analisis Komposisi FTIR',
                 'category' => 'Spektroskopi',
-                'image' => 'ftir-analysis.jpg',
-                'price_range' => 'Rp 180.000 - Rp 350.000',
+                'image' => 'ftir-analysis.jpeg',
                 'duration' => '2-3 hari kerja',
                 'description' => 'Identifikasi gugus fungsi dan analisis komposisi material menggunakan Fourier Transform Infrared (FTIR) spectroscopy.',
                 'applications' => [
@@ -192,8 +186,9 @@ class TestingServicesController extends Controller
 
         // Logic untuk menyimpan permintaan pengujian
         // Bisa ditambahkan penyimpanan ke database dan kirim email
+        // Admin akan mengonfirmasi harga setelah evaluasi permintaan
 
-        return redirect()->back()->with('success', 'Permintaan pengujian berhasil dikirim. Kami akan menghubungi Anda untuk jadwal dan estimasi biaya.');
+        return redirect()->back()->with('success', 'Permintaan pengujian berhasil dikirim. Admin akan menghubungi Anda untuk konfirmasi jadwal dan informasi biaya.');
     }
 
     private function getTestingServiceById($id)
@@ -209,8 +204,7 @@ class TestingServicesController extends Controller
                 'id' => 1,
                 'name' => 'Analisis Spektroskopi UV-Vis',
                 'category' => 'Spektroskopi',
-                'image' => 'spectroscopy-uv.jpg',
-                'price_range' => 'Rp 150.000 - Rp 300.000',
+                'image' => 'spectroscopy-uv.jpeg',
                 'duration' => '2-3 hari kerja',
                 'description' => 'Analisis kualitatif dan kuantitatif sampel menggunakan spektrofotometer UV-Vis untuk identifikasi senyawa dan penentuan konsentrasi.',
                 'applications' => [
@@ -229,7 +223,121 @@ class TestingServicesController extends Controller
                 'icon' => 'fas fa-chart-line',
                 'available' => true
             ],
-            // ... data lainnya sama seperti di method index
+            [
+                'id' => 2,
+                'name' => 'Pengujian Sifat Mekanik Material',
+                'category' => 'Mekanik',
+                'image' => 'mechanical-testing.jpg',
+                'duration' => '3-5 hari kerja',
+                'description' => 'Pengujian sifat mekanik material meliputi uji tarik, tekan, lentur, dan kekerasan sesuai standar ASTM dan ISO.',
+                'applications' => [
+                    'Uji tarik (tensile test)',
+                    'Uji tekan (compression test)',
+                    'Uji lentur (flexural test)',
+                    'Uji kekerasan (hardness test)',
+                    'Analisis struktur mikro'
+                ],
+                'sample_requirements' => [
+                    'Dimensi sesuai standar pengujian',
+                    'Permukaan rata dan bersih',
+                    'Jumlah sampel minimum 3 buah',
+                    'Material tidak mudah hancur'
+                ],
+                'icon' => 'fas fa-weight-hanging',
+                'available' => true
+            ],
+            [
+                'id' => 3,
+                'name' => 'Karakterisasi Termal DSC/TGA',
+                'category' => 'Termal',
+                'image' => 'thermal-analysis.jpeg',
+                'duration' => '3-4 hari kerja',
+                'description' => 'Analisis sifat termal material menggunakan DSC (Differential Scanning Calorimetry) dan TGA (Thermogravimetric Analysis).',
+                'applications' => [
+                    'Penentuan titik leleh',
+                    'Analisis stabilitas termal',
+                    'Studi transisi fase',
+                    'Karakterisasi polimer',
+                    'Analisis dekomposisi'
+                ],
+                'sample_requirements' => [
+                    'Massa sampel 5-20 mg',
+                    'Sampel homogen',
+                    'Tahan suhu tinggi (untuk TGA)',
+                    'Tidak mengandung air berlebih'
+                ],
+                'icon' => 'fas fa-thermometer-half',
+                'available' => true
+            ],
+            [
+                'id' => 4,
+                'name' => 'Analisis Struktur Kristal XRD',
+                'category' => 'Difraksi',
+                'image' => 'xrd-analysis.jpeg',
+                'duration' => '4-6 hari kerja',
+                'description' => 'Analisis struktur kristal dan identifikasi fase menggunakan X-Ray Diffraction (XRD) untuk material kristalin dan amorf.',
+                'applications' => [
+                    'Identifikasi fase kristal',
+                    'Analisis ukuran kristal',
+                    'Penentuan parameter kisi',
+                    'Studi struktur material',
+                    'Quality control mineral'
+                ],
+                'sample_requirements' => [
+                    'Sampel serbuk halus (<75 μm)',
+                    'Massa minimum 1 gram',
+                    'Kristalinitas memadai',
+                    'Bebas dari kontaminasi'
+                ],
+                'icon' => 'fas fa-gem',
+                'available' => false
+            ],
+            [
+                'id' => 5,
+                'name' => 'Pengujian Konduktivitas Listrik',
+                'category' => 'Elektronik',
+                'image' => 'conductivity-test.jpeg',
+                'duration' => '1-2 hari kerja',
+                'description' => 'Pengukuran konduktivitas dan resistivitas listrik material pada berbagai kondisi suhu dan frekuensi.',
+                'applications' => [
+                    'Pengukuran resistivitas',
+                    'Karakterisasi konduktor',
+                    'Analisis semikonduktor',
+                    'Uji material isolator',
+                    'Studi temperatur koefisien'
+                ],
+                'sample_requirements' => [
+                    'Dimensi dapat dipasang probe',
+                    'Permukaan kontak bersih',
+                    'Ketebalan minimum 1 mm',
+                    'Material kering'
+                ],
+                'icon' => 'fas fa-bolt',
+                'available' => true
+            ],
+            [
+                'id' => 6,
+                'name' => 'Analisis Komposisi FTIR',
+                'category' => 'Spektroskopi',
+                'image' => 'ftir-analysis.jpeg',
+                'duration' => '2-3 hari kerja',
+                'description' => 'Identifikasi gugus fungsi dan analisis komposisi material menggunakan Fourier Transform Infrared (FTIR) spectroscopy.',
+                'applications' => [
+                    'Identifikasi gugus fungsi',
+                    'Analisis polimer',
+                    'Deteksi kontaminan',
+                    'Studi interaksi molekul',
+                    'Quality control material'
+                ],
+                'sample_requirements' => [
+                    'Sampel padat atau cair',
+                    'Jumlah minimal 100 mg',
+                    'Bebas air (untuk analisis padat)',
+                    'Tidak mengandung logam'
+                ],
+                'icon' => 'fas fa-wave-square',
+                'available' => true
+            ]
         ];
     }
 }

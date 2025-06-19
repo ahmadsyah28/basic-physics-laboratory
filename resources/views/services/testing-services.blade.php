@@ -51,22 +51,6 @@
                 Solusi lengkap analisis dan pengujian material dengan teknologi terdepan dan standar internasional
             </p>
         </div>
-
-        <!-- Quick Stats -->
-        <div class="scroll-animate opacity-0 grid grid-cols-1 md:grid-cols-3 gap-6 mt-12" data-animation="fade-up" data-delay="400">
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div class="text-3xl font-bold text-white mb-2">{{ count($testingServices) }}+</div>
-                <div class="text-blue-200">Jenis Pengujian</div>
-            </div>
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div class="text-3xl font-bold text-white mb-2">{{ collect($testingServices)->where('available', true)->count() }}</div>
-                <div class="text-blue-200">Layanan Tersedia</div>
-            </div>
-            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div class="text-3xl font-bold text-white mb-2">{{ count(array_unique(array_column($testingServices, 'category'))) }}</div>
-                <div class="text-blue-200">Kategori Analisis</div>
-            </div>
-        </div>
     </div>
 </section>
 
@@ -84,6 +68,7 @@
             </h2>
             <p class="text-gray-600 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed">
                 Dapatkan hasil analisis yang akurat dan terpercaya dengan peralatan canggih dan tim ahli berpengalaman.
+                Estimasi biaya dan jadwal akan dikonfirmasi oleh admin setelah evaluasi sampel.
             </p>
         </div>
 
@@ -168,12 +153,12 @@
                         </div>
                     </div>
 
-                    <!-- Price Range -->
+                    <!-- Duration Info -->
                     <div class="absolute bottom-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                            <div class="text-xs text-gray-600">Biaya</div>
+                            <div class="text-xs text-gray-600">Estimasi</div>
                             <div class="text-sm font-bold text-blue-600">
-                                {{ explode(' - ', $service['price_range'])[0] }}+
+                                {{ $service['duration'] }}
                             </div>
                         </div>
                     </div>
@@ -187,12 +172,11 @@
                             {{ $service['category'] }}
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 mb-2 leading-tight">{{ $service['name'] }}</h3>
-                        <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center text-sm text-gray-500">
                             <span class="flex items-center">
                                 <i class="fas fa-clock text-blue-500 mr-1"></i>
                                 {{ $service['duration'] }}
                             </span>
-                            <span class="font-medium text-blue-600">{{ $service['price_range'] }}</span>
                         </div>
                     </div>
 
@@ -216,6 +200,14 @@
                                 +{{ count($service['applications']) - 3 }} aplikasi lainnya
                             </div>
                             @endif
+                        </div>
+                    </div>
+
+                    <!-- Price Info Notice -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="text-xs text-gray-600 text-center">
+                            <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                            Estimasi biaya akan dikonfirmasi admin
                         </div>
                     </div>
 
@@ -327,6 +319,16 @@
                 <!-- Testing Service Info -->
                 <div id="testing-info" class="bg-gray-50 rounded-xl p-4">
                     <!-- Testing service details will be populated by JavaScript -->
+                </div>
+
+                <!-- Admin Notice -->
+                <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                        <div class="text-sm text-blue-700">
+                            <strong>Informasi Penting:</strong> Admin akan menghubungi Anda dalam 1-2 hari kerja untuk konfirmasi jadwal pengujian dan estimasi biaya berdasarkan sampel yang akan dianalisis.
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Terms -->
@@ -537,7 +539,7 @@ function openTestingModal(serviceId) {
             <div>
                 <div class="font-semibold text-gray-900">${service.name}</div>
                 <div class="text-sm text-gray-600">${service.category}</div>
-                <div class="text-sm text-blue-600">Estimasi: ${service.duration} | ${service.price_range}</div>
+                <div class="text-sm text-blue-600">Estimasi: ${service.duration}</div>
             </div>
         </div>
         <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -563,9 +565,8 @@ function closeTestingModal() {
 // Handle form submission
 document.getElementById('testingForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    alert('Permintaan pengujian berhasil dikirim! Kami akan menghubungi Anda untuk jadwal dan estimasi biaya.');
+    alert('Permintaan pengujian berhasil dikirim! Admin akan menghubungi Anda dalam 1-2 hari kerja untuk konfirmasi jadwal dan estimasi biaya.');
     closeTestingModal();
 });
 </script>
 @endsection
-

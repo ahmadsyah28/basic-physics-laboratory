@@ -79,14 +79,17 @@
 
                 <!-- Service Info -->
                 <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 mb-8 border border-blue-200">
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-6">
                         <div>
-                            <div class="text-sm text-blue-600 font-semibold mb-1">Estimasi Waktu</div>
+                            <div class="text-sm text-blue-600 font-semibold mb-1">Estimasi Waktu Pengujian</div>
                             <div class="text-2xl font-bold text-blue-700">{{ $testingService['duration'] }}</div>
                         </div>
-                        <div>
-                            <div class="text-sm text-blue-600 font-semibold mb-1">Rentang Biaya</div>
-                            <div class="text-lg font-bold text-blue-700">{{ $testingService['price_range'] }}</div>
+                        <div class="pt-4 border-t border-blue-200">
+                            <div class="text-sm text-blue-600 font-semibold mb-2">Informasi Biaya</div>
+                            <div class="text-sm text-blue-700 flex items-center">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Estimasi biaya akan dikonfirmasi oleh admin setelah evaluasi sampel
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -176,6 +179,7 @@
                                 <li>• Sampel akan disimpan selama 30 hari setelah pengujian</li>
                                 <li>• Laporan hasil dalam format PDF dan Excel</li>
                                 <li>• Sertifikat pengujian tersedia atas permintaan</li>
+                                <li>• Estimasi biaya akan diberikan setelah evaluasi awal sampel</li>
                             </ul>
                         </div>
                     </div>
@@ -190,25 +194,32 @@
                                 <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
                                 <div>
                                     <h4 class="font-semibold text-gray-900 mb-2">Konsultasi & Registrasi</h4>
-                                    <p class="text-gray-600">Diskusi kebutuhan pengujian dan registrasi sampel</p>
+                                    <p class="text-gray-600">Diskusi kebutuhan pengujian dan registrasi sampel dengan admin</p>
                                 </div>
                             </div>
                             <div class="flex items-start space-x-4">
                                 <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
                                 <div>
-                                    <h4 class="font-semibold text-gray-900 mb-2">Penyerahan Sampel</h4>
-                                    <p class="text-gray-600">Penyerahan sampel dengan form yang telah diisi</p>
+                                    <h4 class="font-semibold text-gray-900 mb-2">Evaluasi & Konfirmasi Biaya</h4>
+                                    <p class="text-gray-600">Admin mengevaluasi sampel dan memberikan estimasi biaya pengujian</p>
                                 </div>
                             </div>
                             <div class="flex items-start space-x-4">
                                 <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-2">Penyerahan Sampel</h4>
+                                    <p class="text-gray-600">Penyerahan sampel dengan form yang telah diisi setelah persetujuan biaya</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-4">
+                                <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
                                 <div>
                                     <h4 class="font-semibold text-gray-900 mb-2">Persiapan & Analisis</h4>
                                     <p class="text-gray-600">Preparasi sampel dan pelaksanaan pengujian</p>
                                 </div>
                             </div>
                             <div class="flex items-start space-x-4">
-                                <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                                <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">5</div>
                                 <div>
                                     <h4 class="font-semibold text-gray-900 mb-2">Laporan Hasil</h4>
                                     <p class="text-gray-600">Penyerahan laporan hasil pengujian dan interpretasi</p>
@@ -223,6 +234,7 @@
                             <p class="text-sm text-green-700">
                                 Semua pengujian dilakukan dengan standar ISO 17025 dan menggunakan peralatan yang terkalibrasi.
                                 Tim analis berpengalaman dengan sertifikasi internasional memastikan hasil yang akurat dan terpercaya.
+                                Transparansi biaya dan jadwal dijamin melalui konfirmasi admin.
                             </p>
                         </div>
                     </div>
@@ -232,8 +244,109 @@
     </div>
 </section>
 
-<!-- Testing Request Modal (reuse from testing-services.blade.php) -->
-<!-- Include the same modal code here -->
+<!-- Testing Request Modal -->
+<div id="testingModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeTestingModal()"></div>
+
+        <!-- Modal content -->
+        <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Ajukan Permintaan Pengujian</h3>
+                <button onclick="closeTestingModal()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="testingForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Personal/Organization Info -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap *</label>
+                        <input type="text" name="name" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Institusi/Organisasi *</label>
+                        <input type="text" name="organization" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                        <input type="email" name="email" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon *</label>
+                        <input type="tel" name="phone" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Diharapkan *</label>
+                        <input type="date" name="expected_date" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi Sampel *</label>
+                    <textarea name="sample_description" rows="3" required
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Jelaskan jenis sampel, asal, dan karakteristik yang diketahui..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Kebutuhan Pengujian *</label>
+                    <textarea name="test_requirements" rows="4" required
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Jelaskan parameter yang ingin dianalisis dan tujuan pengujian..."></textarea>
+                </div>
+
+                <!-- Testing Service Info -->
+                <div id="testing-info" class="bg-gray-50 rounded-xl p-4">
+                    <!-- Testing service details will be populated by JavaScript -->
+                </div>
+
+                <!-- Admin Notice -->
+                <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                        <div class="text-sm text-blue-700">
+                            <strong>Informasi Penting:</strong> Admin akan menghubungi Anda dalam 1-2 hari kerja untuk konfirmasi jadwal pengujian dan estimasi biaya berdasarkan sampel yang akan dianalisis.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" id="terms" required class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="terms" class="text-sm text-gray-600">
+                        Saya menyetujui <a href="#" class="text-blue-600 hover:underline">syarat dan ketentuan</a> layanan pengujian laboratorium.
+                    </label>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeTestingModal()"
+                            class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors duration-200">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200">
+                        Kirim Permintaan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
 .tab-button.active {
@@ -276,6 +389,21 @@
 .tab-content.hidden {
     opacity: 0;
 }
+
+/* Modal animations */
+#testingModal.show {
+    display: flex !important;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 </style>
 
 <script>
@@ -288,6 +416,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize tabs
     initTabs();
+
+    // Set minimum date for date input
+    const today = new Date().toISOString().split('T')[0];
+    const expectedDateInput = document.querySelector('input[name="expected_date"]');
+    if (expectedDateInput) {
+        expectedDateInput.setAttribute('min', today);
+    }
 });
 
 function initTabs() {
@@ -343,8 +478,48 @@ function initScrollAnimations() {
 }
 
 function openTestingModal(serviceId) {
-    // Implementation similar to testing-services.blade.php
-    alert('Modal pengujian akan dibuka - implementasi sama dengan halaman utama');
+    const service = window.testingServiceData[0];
+    if (!service) return;
+
+    // Populate testing service info in modal
+    const testingInfo = document.getElementById('testing-info');
+    testingInfo.innerHTML = `
+        <h4 class="font-semibold text-gray-900 mb-3">Layanan Pengujian</h4>
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                <i class="${service.icon} text-white"></i>
+            </div>
+            <div>
+                <div class="font-semibold text-gray-900">${service.name}</div>
+                <div class="text-sm text-gray-600">${service.category}</div>
+                <div class="text-sm text-blue-600">Estimasi: ${service.duration}</div>
+            </div>
+        </div>
+        <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h5 class="font-semibold text-yellow-800 mb-2">Persyaratan Sampel:</h5>
+            <ul class="text-sm text-yellow-700 space-y-1">
+                ${service.sample_requirements.map(req => `<li>• ${req}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+
+    // Show modal
+    document.getElementById('testingModal').classList.remove('hidden');
+    document.getElementById('testingModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
+
+function closeTestingModal() {
+    document.getElementById('testingModal').classList.add('hidden');
+    document.getElementById('testingModal').classList.remove('show');
+    document.body.style.overflow = 'auto';
+}
+
+// Handle form submission
+document.getElementById('testingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Permintaan pengujian berhasil dikirim! Admin akan menghubungi Anda dalam 1-2 hari kerja untuk konfirmasi jadwal dan estimasi biaya.');
+    closeTestingModal();
+});
 </script>
 @endsection

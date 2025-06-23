@@ -5,26 +5,71 @@ document.addEventListener("DOMContentLoaded", function () {
     const logoWhite = document.getElementById("logo-white");
     const logoDark = document.getElementById("logo-dark");
 
-    // Navbar scroll effect dengan pergantian logo dan warna
-    function updateNavbar() {
-        if (window.scrollY > 50) {
-            // Ketika di-scroll
-            navbar.classList.add("navbar-scrolled");
-            // Ganti logo
-            if (logoWhite && logoDark) {
-                logoWhite.style.opacity = "0";
-                logoDark.style.opacity = "1";
-            }
-        } else {
-            // Ketika di top
-            navbar.classList.remove("navbar-scrolled");
-            // Kembalikan logo putih
-            if (logoWhite && logoDark) {
-                logoWhite.style.opacity = "1";
-                logoDark.style.opacity = "0";
-            }
+    // Fungsi untuk mengecek apakah halaman saat ini perlu navbar scrolled
+    function shouldNavbarBeScrolled() {
+        const currentPath = window.location.pathname;
+
+        // Pattern UUID: 8-4-4-4-12 format (contoh: dcabfb5a-7e56-4419-9c02-bee87e17e5e4)
+        const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+
+        // Cek khusus untuk halaman detail equipment-loan (dengan UUID)
+        // Pattern: /services/equipment-loan/[UUID]
+        const equipmentDetailPattern = new RegExp(`^\/services\/equipment-loan\/${uuidPattern}$`);
+        if (equipmentDetailPattern.test(currentPath)) {
+            return true;
+        }
+
+        // Cek khusus untuk halaman detail testing (dengan UUID)
+        // Pattern: /services/testing/[UUID]
+        const testingDetailPattern = new RegExp(`^\/services\/testing\/${uuidPattern}$`);
+        if (testingDetailPattern.test(currentPath)) {
+            return true;
+        }
+
+        // Cek khusus untuk halaman detail articles (dengan UUID)
+        // Pattern: /articles/[UUID]
+        const articleDetailPattern = new RegExp(`^\/articles\/${uuidPattern}$`);
+        if (articleDetailPattern.test(currentPath)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // Fungsi untuk force navbar ke kondisi scrolled
+    function forceNavbarScrolled() {
+        navbar.classList.add("navbar-scrolled");
+        if (logoWhite && logoDark) {
+            logoWhite.style.opacity = "0";
+            logoDark.style.opacity = "1";
         }
     }
+
+    // Fungsi untuk reset navbar ke kondisi normal
+    function resetNavbar() {
+        navbar.classList.remove("navbar-scrolled");
+        if (logoWhite && logoDark) {
+            logoWhite.style.opacity = "1";
+            logoDark.style.opacity = "0";
+        }
+    }
+
+    // Navbar scroll effect dengan pergantian logo dan warna
+    function updateNavbar() {
+        // Jika halaman tertentu, paksa navbar scrolled
+        if (shouldNavbarBeScrolled()) {
+            forceNavbarScrolled();
+            return; // Skip scroll check
+        }
+
+        // Logic normal untuk scroll
+        if (window.scrollY > 50) {
+            forceNavbarScrolled();
+        } else {
+            resetNavbar();
+        }
+    }
+    // ===== AKHIR TAMBAHAN BARU =====
 
     // Event listener untuk scroll
     window.addEventListener("scroll", updateNavbar);
@@ -38,11 +83,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ===== TAMBAHAN BARU: Mobile dropdown layanan =====
+    // Mobile dropdown layanan
     const mobileDropdownBtn = document.querySelector(".mobile-dropdown-btn");
-    const mobileDropdownContent = document.querySelector(
-        ".mobile-dropdown-content"
-    );
+    const mobileDropdownContent = document.querySelector(".mobile-dropdown-content");
 
     if (mobileDropdownBtn && mobileDropdownContent) {
         mobileDropdownBtn.addEventListener("click", function (e) {
@@ -50,8 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
             mobileDropdownContent.classList.toggle("hidden");
         });
     }
-
-    // ===== AKHIR TAMBAHAN BARU =====
 
     // Smooth scroll untuk anchor links
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -62,7 +103,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const navbarHeight = navbar.offsetHeight;
                 const targetPosition = target.offsetTop - navbarHeight;
 
-                // Tutup mobile menu jika terbuka
                 if (mobileMenu && !mobileMenu.classList.contains("hidden")) {
                     mobileMenu.classList.add("hidden");
                 }
@@ -89,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Tutup mobile menu ketika resize ke desktop
     window.addEventListener("resize", function () {
         if (window.innerWidth >= 768 && mobileMenu) {
-            // md breakpoint
             mobileMenu.classList.add("hidden");
         }
     });

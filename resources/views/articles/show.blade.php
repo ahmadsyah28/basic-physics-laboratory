@@ -36,17 +36,12 @@
 
         <!-- Article Header -->
         <div class="text-center mb-8">
-            <!-- Category Badge -->
+            <!-- Article Badge -->
             <div class="mb-6">
-                @if($article['category'] == 'Penelitian')
-                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $article['category'] }}</span>
-                @elseif($article['category'] == 'Pendidikan')
-                    <span class="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $article['category'] }}</span>
-                @elseif($article['category'] == 'Kolaborasi')
-                    <span class="bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $article['category'] }}</span>
-                @else
-                    <span class="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $article['category'] }}</span>
-                @endif
+                <div class="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                    <i class="fas fa-newspaper mr-2"></i>
+                    Artikel Laboratorium
+                </div>
             </div>
 
             <!-- Title -->
@@ -62,30 +57,11 @@
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-calendar mr-2 text-blue-600"></i>
-                    <span>{{ date('d M Y', strtotime($article['date'])) }}</span>
-                </div>
-                <div class="flex items-center">
-                    <i class="fas fa-clock mr-2 text-blue-600"></i>
-                    <span>5 menit baca</span>
+                    <span>{{ \Carbon\Carbon::parse($article['date'])->format('d M Y') }}</span>
                 </div>
             </div>
 
-            <!-- Share Buttons -->
-            <div class="flex justify-center items-center gap-4 mb-8">
-                <span class="text-gray-500 text-sm">Bagikan:</span>
-                <a href="#" class="w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" class="w-10 h-10 bg-blue-400 hover:bg-blue-500 text-white rounded-full flex items-center justify-center transition-colors duration-200">
-                    <i class="fab fa-twitter"></i>
-                </a>
-                <a href="#" class="w-10 h-10 bg-blue-700 hover:bg-blue-800 text-white rounded-full flex items-center justify-center transition-colors duration-200">
-                    <i class="fab fa-linkedin-in"></i>
-                </a>
-                <a href="#" class="w-10 h-10 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center transition-colors duration-200">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-            </div>
+
         </div>
     </div>
 </section>
@@ -96,9 +72,10 @@
 
         <!-- Featured Image -->
         <div class="mb-12">
-            <img src="{{ asset($article['image']) }}"
+            <img src="{{ $article['image'] }}"
                  alt="{{ $article['title'] }}"
-                 class="w-full h-80 object-cover rounded-3xl shadow-lg">
+                 class="w-full h-80 object-cover rounded-3xl shadow-lg"
+                 onerror="this.src='{{ asset('images/article/default.jpg') }}'">
         </div>
 
         <!-- Article Content -->
@@ -108,126 +85,10 @@
             </div>
         </div>
 
-        <!-- Tags Section -->
-        <div class="mt-12 pt-8 border-t border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tags:</h3>
-            <div class="flex flex-wrap gap-2">
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">{{ $article['category'] }}</span>
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Fisika</span>
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Laboratorium</span>
-                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Penelitian</span>
-            </div>
-        </div>
-
-        <!-- Author Bio -->
-        <div class="mt-12 pt-8 border-t border-gray-200">
-            <div class="bg-gray-50 rounded-2xl p-8">
-                <div class="flex items-start space-x-4">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-user text-blue-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-gray-900 text-lg mb-2">{{ $article['author'] }}</h4>
-                        <p class="text-gray-600 leading-relaxed">
-                            Peneliti dan dosen di Laboratorium Fisika Dasar dengan fokus pada bidang geofisika dan instrumentasi.
-                            Memiliki pengalaman lebih dari 10 tahun dalam penelitian dan pengembangan teknologi fisika.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="mt-12 pt-8 border-t border-gray-200">
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <a href="{{ route('articles.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Kembali ke Artikel
-                </a>
-
-                <div class="flex items-center gap-4">
-                    <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-print mr-2"></i>
-                        Cetak
-                    </button>
-                    <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
-                        <i class="fas fa-bookmark mr-2"></i>
-                        Simpan
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 
-<!-- Related Articles -->
-<section class="py-16 bg-gray-50">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="font-poppins text-3xl font-bold text-gray-900 mb-4">Artikel Terkait</h2>
-            <p class="text-gray-600">Artikel lainnya yang mungkin menarik untuk Anda</p>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Related Article 1 -->
-            <article class="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <img src="{{ asset('images/article-2.jpg') }}"
-                     alt="Related Article"
-                     class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="p-6">
-                    <div class="text-sm text-blue-600 font-medium mb-2">Pendidikan</div>
-                    <h3 class="font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
-                        Inovasi Metode Praktikum Fisika Modern
-                    </h3>
-                    <p class="text-gray-600 text-sm mb-4">
-                        Penerapan teknologi AR dan VR dalam praktikum fisika...
-                    </p>
-                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                        Baca Selengkapnya →
-                    </a>
-                </div>
-            </article>
-
-            <!-- Related Article 2 -->
-            <article class="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <img src="{{ asset('images/article-3.jpg') }}"
-                     alt="Related Article"
-                     class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="p-6">
-                    <div class="text-sm text-green-600 font-medium mb-2">Kolaborasi</div>
-                    <h3 class="font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
-                        Kerjasama Penelitian dengan Universitas Tokyo
-                    </h3>
-                    <p class="text-gray-600 text-sm mb-4">
-                        Program pertukaran peneliti dan mahasiswa dalam bidang...
-                    </p>
-                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                        Baca Selengkapnya →
-                    </a>
-                </div>
-            </article>
-
-            <!-- Related Article 3 -->
-            <article class="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <img src="{{ asset('images/article-4.jpg') }}"
-                     alt="Related Article"
-                     class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="p-6">
-                    <div class="text-sm text-purple-600 font-medium mb-2">Publikasi</div>
-                    <h3 class="font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
-                        Publikasi Penelitian di Jurnal Internasional
-                    </h3>
-                    <p class="text-gray-600 text-sm mb-4">
-                        Tim peneliti berhasil mempublikasikan hasil penelitian...
-                    </p>
-                    <a href="#" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
-                        Baca Selengkapnya →
-                    </a>
-                </div>
-            </article>
-        </div>
-    </div>
-</section>
 
 <style>
 /* Typography */
@@ -293,6 +154,129 @@
         page-break-after: avoid;
     }
 }
+
+/* Share buttons hover effects */
+.w-10.h-10 {
+    transition: all 0.2s ease;
+}
+
+.w-10.h-10:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Image loading effect */
+img {
+    transition: opacity 0.3s ease;
+}
+
+img[src=""], img:not([src]) {
+    opacity: 0;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Image lazy loading effect
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        img.addEventListener('load', function() {
+            this.style.opacity = '1';
+        });
+    });
+
+    // Share functionality
+    const shareButtons = document.querySelectorAll('[href="#"]');
+    shareButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Get article info
+            const title = document.querySelector('h1').textContent;
+            const url = window.location.href;
+
+            // Determine share platform based on icon
+            const icon = this.querySelector('i');
+
+            if (icon.classList.contains('fa-facebook-f')) {
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+            } else if (icon.classList.contains('fa-twitter')) {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank');
+            } else if (icon.classList.contains('fa-linkedin-in')) {
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+            } else if (icon.classList.contains('fa-whatsapp')) {
+                window.open(`https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`, '_blank');
+            }
+        });
+    });
+
+    // Save article functionality (you can customize this)
+    const saveButton = document.querySelector('.fa-bookmark').parentElement;
+    if (saveButton) {
+        saveButton.addEventListener('click', function() {
+            // Toggle saved state
+            const icon = this.querySelector('i');
+            const text = this.querySelector('span') || this.childNodes[2];
+
+            if (icon.classList.contains('fas')) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                if (text) text.textContent = ' Simpan';
+                this.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                this.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+
+                // Show notification
+                showNotification('Artikel dihapus dari simpanan');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                if (text) text.textContent = ' Tersimpan';
+                this.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                this.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+
+                // Show notification
+                showNotification('Artikel disimpan');
+            }
+        });
+    }
+
+    // Simple notification function
+    function showNotification(message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Show notification
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+});
+</script>
 
 @endsection

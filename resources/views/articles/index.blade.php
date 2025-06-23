@@ -48,45 +48,22 @@
             <p class="text-xl md:text-2xl text-amber-100 max-w-3xl mx-auto leading-relaxed drop-shadow-md mb-8">
                 Temukan berita terkini, penelitian terdepan, dan perkembangan inovasi dari Laboratorium Fisika Dasar
             </p>
-
-            <!-- Stats -->
-            <div class="flex flex-wrap justify-center gap-8 articles-hero-animate opacity-0" data-animation="fade-up" data-delay="400">
-                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl px-6 py-4">
-                    <div class="text-3xl font-bold text-yellow-400">{{ count($articles) }}+</div>
-                    <div class="text-amber-100">Artikel</div>
-                </div>
-                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl px-6 py-4">
-                    <div class="text-3xl font-bold text-orange-400">5+</div>
-                    <div class="text-amber-100">Kategori</div>
-                </div>
-                <div class="text-center bg-white/10 backdrop-blur-sm rounded-2xl px-6 py-4">
-                    <div class="text-3xl font-bold text-white">{{ date('Y') }}</div>
-                    <div class="text-amber-100">Terbaru</div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- Filter Section -->
+<!-- Search Section -->
 <section class="py-8 bg-white border-b border-gray-200">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap justify-center gap-4">
-            <button class="filter-btn active px-6 py-3 bg-blue-600 text-white rounded-full font-medium transition-all duration-300 hover:bg-blue-700" data-filter="all">
-                Semua Artikel
-            </button>
-            <button class="filter-btn px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium transition-all duration-300 hover:bg-blue-600 hover:text-white" data-filter="penelitian">
-                Penelitian
-            </button>
-            <button class="filter-btn px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium transition-all duration-300 hover:bg-blue-600 hover:text-white" data-filter="pendidikan">
-                Pendidikan
-            </button>
-            <button class="filter-btn px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium transition-all duration-300 hover:bg-blue-600 hover:text-white" data-filter="kolaborasi">
-                Kolaborasi
-            </button>
-            <button class="filter-btn px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-medium transition-all duration-300 hover:bg-blue-600 hover:text-white" data-filter="publikasi">
-                Publikasi
-            </button>
+        <div class="flex justify-center">
+            <div class="relative w-full max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" id="article-search"
+                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Cari artikel...">
+            </div>
         </div>
     </div>
 </section>
@@ -96,36 +73,32 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         <!-- Featured Article (First Article) -->
-        @if(count($articles) > 0)
+        @if($articles->count() > 0)
         <div class="mb-16">
             <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Artikel Unggulan</h2>
             <article class="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
                 <div class="lg:flex">
                     <div class="lg:w-1/2">
-                        <img src="{{ asset($articles[0]['image']) }}"
-                             alt="{{ $articles[0]['title'] }}"
-                             class="w-full h-64 lg:h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <img src="{{ $articles->first()['image'] }}"
+                             alt="{{ $articles->first()['title'] }}"
+                             class="w-full h-64 lg:h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                             onerror="this.src='{{ asset('images/article/default.jpg') }}'">
                     </div>
                     <div class="lg:w-1/2 p-8 lg:p-12">
                         <div class="flex items-center mb-4">
-                            @if($articles[0]['category'] == 'Penelitian')
-                                <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $articles[0]['category'] }}</span>
-                            @elseif($articles[0]['category'] == 'Pendidikan')
-                                <span class="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $articles[0]['category'] }}</span>
-                            @elseif($articles[0]['category'] == 'Kolaborasi')
-                                <span class="bg-green-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $articles[0]['category'] }}</span>
-                            @else
-                                <span class="bg-gray-600 text-white px-4 py-2 rounded-full text-sm font-medium">{{ $articles[0]['category'] }}</span>
-                            @endif
-                            <span class="text-gray-500 text-sm ml-4">{{ date('d M Y', strtotime($articles[0]['date'])) }}</span>
+                            @php $firstArticle = $articles->first(); @endphp
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-newspaper text-blue-600 text-sm"></i>
+                            </div>
+                            <span class="text-gray-500 text-sm">{{ \Carbon\Carbon::parse($firstArticle['date'])->format('d M Y') }}</span>
                         </div>
 
                         <h3 class="font-poppins text-2xl lg:text-3xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
-                            {{ $articles[0]['title'] }}
+                            {{ $firstArticle['title'] }}
                         </h3>
 
                         <p class="text-gray-600 leading-relaxed mb-6 text-lg">
-                            {{ $articles[0]['excerpt'] }}
+                            {{ $firstArticle['excerpt'] }}
                         </p>
 
                         <div class="flex items-center justify-between">
@@ -133,10 +106,10 @@
                                 <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                                     <i class="fas fa-user text-blue-600"></i>
                                 </div>
-                                <span class="text-gray-700 font-medium">{{ $articles[0]['author'] }}</span>
+                                <span class="text-gray-700 font-medium">{{ $firstArticle['author'] }}</span>
                             </div>
 
-                            <a href="{{ route('articles.show', $articles[0]['slug']) }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200 group">
+                            <a href="{{ route('articles.show', $firstArticle['id']) }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200 group">
                                 Baca Selengkapnya
                                 <i class="fas fa-arrow-right ml-2 text-sm group-hover:translate-x-1 transition-transform duration-200"></i>
                             </a>
@@ -149,32 +122,25 @@
 
         <!-- Articles Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="articles-grid">
-            @foreach(array_slice($articles, 1) as $article)
-            <article class="article-card group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2" data-category="{{ strtolower($article['category']) }}">
+            @foreach($articles->skip(1) as $article)
+            <article class="article-card group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
                 <div class="relative overflow-hidden">
-                    <img src="{{ asset($article['image']) }}"
+                    <img src="{{ $article['image'] }}"
                          alt="{{ $article['title'] }}"
-                         class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700">
+                         class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700"
+                         onerror="this.src='{{ asset('images/article/default.jpg') }}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute top-4 left-4">
-                        @if($article['category'] == 'Penelitian')
-                            <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @elseif($article['category'] == 'Pendidikan')
-                            <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @elseif($article['category'] == 'Kolaborasi')
-                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @elseif($article['category'] == 'Publikasi')
-                            <span class="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @else
-                            <span class="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @endif
+                        <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <i class="fas fa-newspaper text-blue-600 text-sm"></i>
+                        </div>
                     </div>
                 </div>
 
                 <div class="p-6">
                     <div class="flex items-center text-sm text-gray-500 mb-3">
                         <i class="fas fa-calendar mr-2"></i>
-                        <span>{{ date('d M Y', strtotime($article['date'])) }}</span>
+                        <span>{{ \Carbon\Carbon::parse($article['date'])->format('d M Y') }}</span>
                         <i class="fas fa-user ml-4 mr-2"></i>
                         <span>{{ $article['author'] }}</span>
                     </div>
@@ -187,7 +153,7 @@
                         {{ $article['excerpt'] }}
                     </p>
 
-                    <a href="{{ route('articles.show', $article['slug']) }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200 group">
+                    <a href="{{ route('articles.show', $article['id']) }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200 group">
                         Baca Selengkapnya
                         <i class="fas fa-arrow-right ml-2 text-sm group-hover:translate-x-1 transition-transform duration-200"></i>
                     </a>
@@ -198,7 +164,7 @@
 
         <!-- Load More Button -->
         <div class="text-center mt-16">
-            <button class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-full hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-blue-500/25">
+            <button class="load-more-btn inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-full hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-blue-500/25">
                 <i class="fas fa-plus mr-2"></i>
                 Muat Artikel Lainnya
             </button>
@@ -380,6 +346,7 @@
     opacity: 1;
     transform: translateY(0);
 }
+
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -400,7 +367,7 @@
     background-clip: text;
 }
 
-/* Filter transition */
+/* Search transition */
 .article-card {
     transition: all 0.3s ease;
 }
@@ -412,6 +379,11 @@
 /* Typography */
 .font-poppins {
     font-family: 'Poppins', sans-serif;
+}
+
+/* Search input focus effect */
+#article-search:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 </style>
 
@@ -489,43 +461,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 300);
 
-    // Filter functionality
-    const filterBtns = document.querySelectorAll('.filter-btn');
+    // Search functionality
+    const searchInput = document.getElementById('article-search');
     const articleCards = document.querySelectorAll('.article-card');
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const filter = this.dataset.filter;
+    if (searchInput) {
+        let searchTimeout;
 
-            // Update active button
-            filterBtns.forEach(b => {
-                b.classList.remove('active', 'bg-blue-600', 'text-white');
-                b.classList.add('bg-gray-100', 'text-gray-700');
-            });
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.toLowerCase().trim();
 
-            this.classList.add('active', 'bg-blue-600', 'text-white');
-            this.classList.remove('bg-gray-100', 'text-gray-700');
-
-            // Filter articles
-            articleCards.forEach(card => {
-                const category = card.dataset.category;
-
-                if (filter === 'all' || category === filter) {
-                    card.classList.remove('hidden');
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, 100);
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.classList.add('hidden');
-                    }, 300);
-                }
-            });
+            searchTimeout = setTimeout(() => {
+                filterArticlesBySearch(query);
+            }, 300);
         });
-    });
+    }
+
+    function filterArticlesBySearch(query) {
+        articleCards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            const excerpt = card.querySelector('p').textContent.toLowerCase();
+            const author = card.querySelector('.fa-user').parentElement.textContent.toLowerCase();
+
+            if (query === '' || title.includes(query) || excerpt.includes(query) || author.includes(query)) {
+                card.classList.remove('hidden');
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            } else {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.classList.add('hidden');
+                }, 300);
+            }
+        });
+    }
+
+    // Load more functionality
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat...';
+            this.disabled = true;
+
+            // Simulate loading more articles
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-plus mr-2"></i>Muat Artikel Lainnya';
+                this.disabled = false;
+                // Di sini bisa ditambahkan logic untuk load artikel dari server
+            }, 1000);
+        });
+    }
 
     // ===== PARALLAX EFFECT =====
     window.addEventListener('scroll', () => {

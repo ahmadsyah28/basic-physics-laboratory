@@ -173,7 +173,7 @@
                                     {{ $facility['description'] }}
                                 </p>
                             </div>
-                            
+
 
                             <!-- Features -->
                             <div class="space-y-6">

@@ -8,6 +8,7 @@ use App\Http\Controllers\EquipmentLoanController;
 use App\Http\Controllers\TestingServicesController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\VisitSchedulingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,4 +58,11 @@ Route::prefix('services/testing')->name('testing.')->group(function () {
     Route::get('/', [TestingServicesController::class, 'index'])->name('services');
     Route::get('/{id}', [TestingServicesController::class, 'show'])->name('detail');
     Route::post('/{id}/request', [TestingServicesController::class, 'requestTest'])->name('request');
+});
+
+// Services - Visit Scheduling
+Route::prefix('services/visit-scheduling')->name('visit.')->group(function () {
+    Route::get('/', [VisitSchedulingController::class, 'index'])->name('index');
+    Route::post('/schedule', [VisitSchedulingController::class, 'store'])->name('store');
+    Route::get('/available-slots', [VisitSchedulingController::class, 'getAvailableSlots'])->name('available-slots');
 });

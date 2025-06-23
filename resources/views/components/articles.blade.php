@@ -1,8 +1,8 @@
 {{-- resources/views/components/articles.blade.php --}}
 <section id="articles" class="py-24 bg-white relative">
-    <!-- Decorative Elements -->
-    <div class="absolute top-20 left-10 w-32 h-32 bg-blue-100 rounded-full opacity-20 blur-3xl"></div>
-    <div class="absolute bottom-20 right-10 w-40 h-40 bg-yellow-100 rounded-full opacity-20 blur-3xl"></div>
+  <!-- Top Divider/Separator -->
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
+    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full"></div>
 
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Section Header -->
@@ -22,46 +22,56 @@
 
         <!-- Articles Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            @foreach($featuredArticles as $index => $article)
-            <!-- Article {{ $index + 1 }} -->
-            <article class="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-blue-200 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 articles-animate" data-animation="fade-up" data-delay="{{ ($index + 1) * 100 }}">
-                <div class="relative overflow-hidden">
-                    <img src="{{ asset($article['image']) }}"
-                         alt="{{ $article['title'] }}"
-                         class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div class="absolute top-4 left-4">
-                        @if($article['category'] == 'Penelitian')
-                            <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @elseif($article['category'] == 'Pendidikan')
-                            <span class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @elseif($article['category'] == 'Kolaborasi')
-                            <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @else
-                            <span class="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-medium">{{ $article['category'] }}</span>
-                        @endif
+            @if(isset($featuredArticles) && count($featuredArticles) > 0)
+                @foreach($featuredArticles as $index => $article)
+                <!-- Article {{ $index + 1 }} -->
+                <article class="group bg-white rounded-3xl overflow-hidden border border-gray-100 hover:border-blue-200 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 articles-animate" data-animation="fade-up" data-delay="{{ ($index + 1) * 100 }}">
+                    <div class="relative overflow-hidden">
+                        <img src="{{ isset($article['image']) ? $article['image'] : asset('images/article/default.jpg') }}"
+                             alt="{{ $article['title'] ?? 'Artikel Laboratorium' }}"
+                             class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                             onerror="this.src='{{ asset('images/article/default.jpg') }}'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="absolute top-4 left-4">
+                            <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                <i class="fas fa-newspaper text-blue-600 text-sm"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center text-sm text-gray-500 mb-3">
-                        <i class="fas fa-calendar mr-2"></i>
-                        <span>{{ date('d M Y', strtotime($article['date'])) }}</span>
-                        <i class="fas fa-user ml-4 mr-2"></i>
-                        <span>{{ $article['author'] }}</span>
+                    <div class="p-6">
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <i class="fas fa-calendar mr-2"></i>
+                            <span>{{ isset($article['date']) ? \Carbon\Carbon::parse($article['date'])->format('d M Y') : 'Tanggal tidak tersedia' }}</span>
+                            <i class="fas fa-user ml-4 mr-2"></i>
+                            <span>{{ $article['author'] ?? 'Penulis tidak diketahui' }}</span>
+                        </div>
+                        <h3 class="font-poppins text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                            {{ $article['title'] ?? 'Judul artikel tidak tersedia' }}
+                        </h3>
+                        <p class="text-gray-600 leading-relaxed mb-4">
+                            {{ $article['excerpt'] ?? 'Deskripsi artikel tidak tersedia' }}
+                        </p>
+                        <a href="{{ route('articles.show', $article['id'] ?? '#') }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">
+                            Baca Selengkapnya
+                            <i class="fas fa-arrow-right ml-2 text-sm group-hover:translate-x-1 transition-transform duration-200"></i>
+                        </a>
                     </div>
-                    <h3 class="font-poppins text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                        {{ $article['title'] }}
-                    </h3>
-                    <p class="text-gray-600 leading-relaxed mb-4">
-                        {{ $article['excerpt'] }}
-                    </p>
-                    <a href="{{ route('articles.show', $article['slug']) }}" class="inline-flex items-center text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">
-                        Baca Selengkapnya
-                        <i class="fas fa-arrow-right ml-2 text-sm group-hover:translate-x-1 transition-transform duration-200"></i>
+                </article>
+                @endforeach
+            @else
+                <!-- Fallback ketika tidak ada artikel -->
+                <div class="col-span-full text-center py-12">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-newspaper text-gray-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Artikel</h3>
+                    <p class="text-gray-600 mb-6">Artikel akan segera ditampilkan di sini.</p>
+                    <a href="{{ route('articles.index') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Lihat Halaman Artikel
                     </a>
                 </div>
-            </article>
-            @endforeach
+            @endif
         </div>
 
         <!-- View All Articles Button -->

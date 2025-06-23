@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EquipmentLoanController extends Controller
 {
@@ -192,9 +193,9 @@ class EquipmentLoanController extends Controller
         return view('services.equipment-detail', compact('equipment'));
     }
 
-    public function requestLoan(Request $request, $id)
+    public function requestLoan(Request $request, $id = null)
     {
-        // Proses permintaan peminjaman
+        // Validasi dasar
         $request->validate([
             'name' => 'required|string|max:255',
             'student_id' => 'required|string|max:20',
@@ -206,10 +207,312 @@ class EquipmentLoanController extends Controller
             'supervisor' => 'required|string|max:255'
         ]);
 
-        // Di sini bisa ditambahkan logic untuk menyimpan ke database
-        // dan mengirim email notifikasi
+        // Check if this is a bulk request or single item request
+        if ($request->has('equipment_ids')) {
+            return $this->requestBulkLoan($request);
+        } else {
+            return $this->requestSingleLoan($request, $id);
+        }
+    }
 
-        return redirect()->back()->with('success', 'Permintaan peminjaman berhasil dikirim. Kami akan menghubungi Anda dalam 1x24 jam.');
+    public function requestBulkLoan(Request $request)
+    {
+        // Additional validation for bulk requests
+        $request->validate([
+            'equipment_ids' => 'required|string',
+            'equipment_quantities' => 'required|string'
+        ]);
+
+        // Parse equipment IDs and quantities
+        $equipmentIds = json_decode($request->equipment_ids, true);
+        $equipmentQuantities = json_decode($request->equipment_quantities, true);
+
+        if (!is_array($equipmentIds) || empty($equipmentIds) || !is_array($equipmentQuantities)) {
+            return redirect()->back()->withErrors(['equipment_ids' => 'Invalid equipment selection.']);
+        }
+
+        // Get selected equipment details
+        $allEquipments = $this->getAllEquipments();
+        $selectedEquipments = collect($allEquipments)->whereIn('id', $equipmentIds);
+
+        // Validate all selected equipment are available with requested quantities
+        $unavailableEquipment = [];
+        $totalUnits = 0;
+
+        foreach ($selectedEquipments as $equipment) {
+            $requestedQuantity = $equipmentQuantities[$equipment['id']] ?? 1;
+            $totalUnits += $requestedQuantity;
+
+            if ($equipment['status'] !== 'available' ||
+                $equipment['quantity_available'] <= 0 ||
+                $requestedQuantity > $equipment['quantity_available']) {
+
+                $unavailableEquipment[] = [
+                    'name' => $equipment['name'],
+                    'requested' => $requestedQuantity,
+                    'available' => $equipment['quantity_available'],
+                    'status' => $equipment['status']
+                ];
+            }
+        }
+
+        if (!empty($unavailableEquipment)) {
+            $errorMessages = [];
+            foreach ($unavailableEquipment as $item) {
+                if ($item['status'] !== 'available') {
+                    $errorMessages[] = "{$item['name']}: Tidak tersedia (maintenance)";
+                } else {
+                    $errorMessages[] = "{$item['name']}: Diminta {$item['requested']} unit, tersedia {$item['available']} unit";
+                }
+            }
+            return redirect()->back()->withErrors([
+                'availability' => "Ketersediaan tidak mencukupi:\n" . implode("\n", $errorMessages)
+            ]);
+        }
+
+        // Create equipment list with quantities
+        $equipmentList = [];
+        foreach ($selectedEquipments as $equipment) {
+            $quantity = $equipmentQuantities[$equipment['id']] ?? 1;
+            $equipmentList[] = [
+                'id' => $equipment['id'],
+                'name' => $equipment['name'],
+                'model' => $equipment['model'],
+                'quantity' => $quantity,
+                'loan_duration' => $equipment['loan_duration']
+            ];
+        }
+
+        // Create loan request data
+        $loanData = [
+            'borrower_name' => $request->name,
+            'student_id' => $request->student_id,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'supervisor' => $request->supervisor,
+            'purpose' => $request->purpose,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'equipment_count' => $selectedEquipments->count(),
+            'total_units' => $totalUnits,
+            'equipment_list' => $equipmentList,
+            'equipment_ids' => $equipmentIds,
+            'equipment_quantities' => $equipmentQuantities,
+            'status' => 'pending',
+            'request_date' => now(),
+            'loan_type' => 'bulk'
+        ];
+
+        // Here you would normally save to database
+        // For demonstration, we'll just simulate the process
+
+        // Log the request (in real application, save to database)
+        Log::info('Bulk Equipment Loan Request', $loanData);
+
+        // Send notification email (in real application)
+        $this->sendLoanRequestNotification($loanData);
+
+        // Create summary message
+        $equipmentSummary = collect($equipmentList)->map(function($item) {
+            return "{$item['name']} ({$item['quantity']} unit)";
+        })->implode(', ');
+
+        return redirect()->back()->with('success',
+            "Permintaan peminjaman berhasil dikirim!\n\n" .
+            "Detail:\n" .
+            "- {$selectedEquipments->count()} jenis alat\n" .
+            "- {$totalUnits} unit total\n" .
+            "- Alat: {$equipmentSummary}\n\n" .
+            "Nomor referensi: BLR-" . date('Ymd') . "-" . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT) . "\n" .
+            "Kami akan menghubungi Anda dalam 1x24 jam untuk konfirmasi dan penjadwalan briefing."
+        );
+    }
+
+    public function requestSingleLoan(Request $request, $id)
+    {
+        $equipment = $this->getEquipmentById($id);
+
+        if (!$equipment) {
+            return redirect()->back()->withErrors(['equipment' => 'Equipment not found.']);
+        }
+
+        // Validate equipment availability
+        if ($equipment['status'] !== 'available' || $equipment['quantity_available'] <= 0) {
+            return redirect()->back()->withErrors([
+                'availability' => "Alat {$equipment['name']} sedang tidak tersedia."
+            ]);
+        }
+
+        // Create loan request data
+        $loanData = [
+            'borrower_name' => $request->name,
+            'student_id' => $request->student_id,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'supervisor' => $request->supervisor,
+            'purpose' => $request->purpose,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'equipment_id' => $id,
+            'equipment_name' => $equipment['name'],
+            'status' => 'pending',
+            'request_date' => now(),
+            'loan_type' => 'single'
+        ];
+
+        // Here you would normally save to database
+        Log::info('Single Equipment Loan Request', $loanData);
+
+        // Send notification email
+        $this->sendLoanRequestNotification($loanData);
+
+        return redirect()->back()->with('success',
+            "Permintaan peminjaman alat {$equipment['name']} berhasil dikirim. " .
+            "Nomor referensi: SLR-" . date('Ymd') . "-" . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT) . ". " .
+            "Kami akan menghubungi Anda dalam 1x24 jam."
+        );
+    }
+
+    /**
+     * Get loan history for admin/user dashboard
+     */
+    public function getLoanHistory($studentId = null)
+    {
+        // This would normally query the database
+        // For demonstration, return mock data with quantity information
+        return [
+            [
+                'id' => 1,
+                'reference_number' => 'BLR-20250619-001',
+                'borrower_name' => 'John Doe',
+                'student_id' => '2021001',
+                'equipment_count' => 3,
+                'total_units' => 5,
+                'equipment_list' => [
+                    ['name' => 'Oscilloscope Digital', 'quantity' => 2],
+                    ['name' => 'Multimeter Digital', 'quantity' => 1],
+                    ['name' => 'Function Generator', 'quantity' => 2]
+                ],
+                'start_date' => '2025-06-20',
+                'end_date' => '2025-06-25',
+                'status' => 'approved',
+                'loan_type' => 'bulk'
+            ],
+            [
+                'id' => 2,
+                'reference_number' => 'SLR-20250618-002',
+                'borrower_name' => 'Jane Smith',
+                'student_id' => '2021002',
+                'equipment_name' => 'Digital Caliper',
+                'quantity' => 3,
+                'start_date' => '2025-06-19',
+                'end_date' => '2025-06-26',
+                'status' => 'active',
+                'loan_type' => 'single'
+            ],
+            [
+                'id' => 3,
+                'reference_number' => 'BLR-20250617-003',
+                'borrower_name' => 'Mike Johnson',
+                'student_id' => '2021003',
+                'equipment_count' => 2,
+                'total_units' => 8,
+                'equipment_list' => [
+                    ['name' => 'Multimeter Digital', 'quantity' => 5],
+                    ['name' => 'Digital Caliper', 'quantity' => 3]
+                ],
+                'start_date' => '2025-06-18',
+                'end_date' => '2025-06-22',
+                'status' => 'completed',
+                'loan_type' => 'bulk'
+            ]
+        ];
+    }
+
+    /**
+     * Check equipment availability for specific dates
+     */
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'equipment_ids' => 'required|array',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date'
+        ]);
+
+        $equipmentIds = $request->equipment_ids;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        // This would normally check against database reservations
+        // For demonstration, assume all requested equipment is available
+        $availability = [];
+
+        foreach ($equipmentIds as $equipmentId) {
+            $equipment = $this->getEquipmentById($equipmentId);
+            if ($equipment) {
+                $availability[$equipmentId] = [
+                    'available' => $equipment['status'] === 'available' && $equipment['quantity_available'] > 0,
+                    'quantity_available' => $equipment['quantity_available'],
+                    'conflicting_bookings' => [] // Would contain overlapping bookings
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'availability' => $availability,
+            'period' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate
+            ]
+        ]);
+    }
+
+    /**
+     * Send notification email (mock implementation)
+     */
+    private function sendLoanRequestNotification($loanData)
+    {
+        // In a real application, you would send actual emails
+        // using Laravel's Mail facade or notification system
+
+        $emailData = [
+            'to' => $loanData['email'],
+            'subject' => 'Konfirmasi Permintaan Peminjaman Alat Laboratorium',
+            'type' => $loanData['loan_type'],
+            'borrower_name' => $loanData['borrower_name'],
+            'student_id' => $loanData['student_id']
+        ];
+
+        if ($loanData['loan_type'] === 'bulk') {
+            $emailData['equipment_count'] = $loanData['equipment_count'];
+            $emailData['total_units'] = $loanData['total_units'] ?? 0;
+            $emailData['equipment_list'] = $loanData['equipment_list'];
+
+            // Create detailed equipment list for email
+            if (isset($loanData['equipment_list']) && is_array($loanData['equipment_list'])) {
+                $emailData['equipment_details'] = collect($loanData['equipment_list'])->map(function($item) {
+                    if (is_array($item) && isset($item['name'], $item['quantity'])) {
+                        return "{$item['name']} - {$item['quantity']} unit";
+                    }
+                    return is_string($item) ? $item : 'Unknown Equipment';
+                })->toArray();
+            } else {
+                $emailData['equipment_details'] = is_array($loanData['equipment_list']) ? $loanData['equipment_list'] : [];
+            }
+        } else {
+            $emailData['equipment_name'] = $loanData['equipment_name'];
+        }
+
+        // Log email sending (in real app, use Mail::send())
+        Log::info('Loan Request Email Sent', $emailData);
+
+        // Also notify lab staff
+        Log::info('Lab Staff Notification', [
+            'type' => 'new_loan_request',
+            'loan_data' => $loanData
+        ]);
     }
 
     private function getEquipmentById($id)
@@ -247,7 +550,6 @@ class EquipmentLoanController extends Controller
                 'icon' => 'fas fa-wave-square',
                 'color' => 'blue'
             ],
-
             [
                 'id' => 2,
                 'name' => 'Multimeter Digital',

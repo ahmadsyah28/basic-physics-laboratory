@@ -38,9 +38,7 @@ Route::get('/facilities', [FacilitiesController::class, 'index'])->name('facilit
 
 // Articles
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
-Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
-
-
+Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles.show')->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 /*
 |--------------------------------------------------------------------------
 | Services Routes (Existing - No Changes)

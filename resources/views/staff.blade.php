@@ -57,6 +57,7 @@
 <section class="py-24 bg-gray-50 relative">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
+
         <!-- Filter & Search Section -->
         <div class="mb-16 staff-animate" data-animation="fade-down">
             <div class="bg-white rounded-3xl p-8 border border-gray-200 shadow-lg">
@@ -66,20 +67,20 @@
                         <button class="staff-filter-btn active px-6 py-3 bg-gradient-to-r from-[#968c82] to-[#635849] text-white rounded-full font-medium transition-all duration-300 hover:from-[#635849] hover:to-[#443f35] shadow-lg" data-filter="all">
                             <i class="fas fa-users mr-2"></i>Semua Tim ({{ $stats['total_staff'] }})
                         </button>
-                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="head-lecturer">
-                            <i class="fas fa-crown mr-2"></i>Kepala Laboratorium ({{ $stats['head-researchers'] }})
+                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="kepala">
+                            <i class="fas fa-crown mr-2"></i>Kepala Lab ({{ $stats['kepala_lab'] }})
                         </button>
-                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="lecturer">
-                            <i class="fas fa-graduation-cap mr-2"></i>Dosen ({{ $stats['lecturers'] }})
+                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="dosen">
+                            <i class="fas fa-graduation-cap mr-2"></i>Dosen ({{ $stats['dosen'] }})
                         </button>
-                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="technician">
-                            <i class="fas fa-tools mr-2"></i>Laboran ({{ $stats['technicians'] }})
+                        <button class="staff-filter-btn px-6 py-3 bg-white text-amber-700 border border-amber-200 rounded-full font-medium transition-all duration-300 hover:bg-amber-50" data-filter="laboran">
+                            <i class="fas fa-tools mr-2"></i>Laboran ({{ $stats['laboran'] }})
                         </button>
                     </div>
 
                     <!-- Search -->
                     <div class="relative">
-                        <input type="text" id="staff-search" placeholder="Cari berdasarkan nama atau keahlian..."
+                        <input type="text" id="staff-search" placeholder="Cari berdasarkan nama atau jabatan..."
                                class="pl-12 pr-4 py-3 w-80 border border-gray-300 rounded-full focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300">
                         <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
@@ -88,117 +89,85 @@
         </div>
 
         <!-- Staff Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16" id="staff-grid">
-            @foreach($staff as $index => $member)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16" id="staff-grid">
+            @foreach($pengurus as $index => $member)
+            @php
+                $jabatanLower = strtolower($member->jabatan);
+
+                // Tentukan kategori
+                if (str_contains($jabatanLower, 'kepala')) {
+                    $category = 'kepala';
+                    $color = 'blue';
+                    $badgeColor = 'yellow';
+                    $badgeIcon = 'star';
+                } elseif (str_contains($jabatanLower, 'dosen') || str_contains($jabatanLower, 'pengajar')) {
+                    $category = 'dosen';
+                    $color = 'purple';
+                    $badgeColor = 'green';
+                    $badgeIcon = 'graduation-cap';
+                } elseif (str_contains($jabatanLower, 'laboran')) {
+                    $category = 'laboran';
+                    $color = 'green';
+                    $badgeColor = 'blue';
+                    $badgeIcon = 'tools';
+                } else {
+                    $category = 'lainnya';
+                    $color = 'gray';
+                    $badgeColor = 'gray';
+                    $badgeIcon = 'user';
+                }
+            @endphp
+
             <div class="staff-card group relative bg-white rounded-3xl p-8 border border-gray-200 hover:border-amber-200 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden staff-animate"
                  data-animation="fade-up"
                  data-delay="{{ ($index + 1) * 100 }}"
-                 data-category="{{ $member['category'] }}"
-                 data-search="{{ strtolower($member['name'] . ' ' . $member['specialization'] . ' ' . implode(' ', $member['research_interests'])) }}">
+                 data-category="{{ $category }}"
+                 data-search="{{ strtolower($member->nama . ' ' . $member->jabatan) }}">
 
                 <!-- Background Glow -->
-                <div class="absolute inset-0 bg-gradient-to-br from-{{ $member['color'] }}-500/5 via-transparent to-{{ $member['color'] }}-700/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-{{ $color }}-500/5 via-transparent to-{{ $color }}-700/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                 <div class="relative z-10">
                     <!-- Header dengan Photo dan Basic Info -->
-                    <div class="flex items-start space-x-6 mb-6">
-                        <!-- Staff Photo - Changed to Rectangle -->
-                        <div class="relative flex-shrink-0">
-                            <div class="w-28 h-36 bg-gradient-to-br from-{{ $member['color'] }}-200 to-{{ $member['color'] }}-300 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-500 overflow-hidden">
-                                @if($member['photo'])
-                                    <img src="{{ asset('images/staff/' . $member['photo']) }}"
-                                         alt="{{ $member['name'] }}"
+                    <div class="text-center mb-6">
+                        <!-- Staff Photo -->
+                        <div class="relative inline-block mb-4">
+                            <div class="w-32 h-40 bg-gradient-to-br from-{{ $color }}-200 to-{{ $color }}-300 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-500 overflow-hidden mx-auto">
+                                @if($member->fotoProfil)
+                                    <img src="{{ asset('images/' . $member->fotoProfil->url) }}"
+                                         alt="{{ $member->nama }}"
                                          class="w-full h-full object-cover rounded-xl">
                                 @else
-                                    <i class="fas fa-user text-{{ $member['color'] }}-600 text-3xl"></i>
+                                    <i class="fas fa-user text-{{ $color }}-600 text-4xl"></i>
                                 @endif
                             </div>
                             <!-- Badge -->
-                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-{{ $member['badge_color'] }}-400 to-{{ $member['badge_color'] }}-500 rounded-full flex items-center justify-center shadow-lg">
-                                <i class="fas fa-{{ $member['badge_icon'] }} text-white text-xs"></i>
+                            <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-{{ $badgeColor }}-400 to-{{ $badgeColor }}-500 rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fas fa-{{ $badgeIcon }} text-white text-sm"></i>
                             </div>
                         </div>
 
                         <!-- Basic Info -->
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-poppins text-xl font-bold text-gray-900 mb-1">
-                                {{ $member['name'] }}
-                            </h3>
-                            <p class="text-{{ $member['color'] }}-600 font-medium mb-2">{{ $member['position'] }}</p>
-                            <p class="text-gray-600 text-sm mb-3">{{ $member['specialization'] }}</p>
-
-                            <!-- Quick Contact -->
-                            <div class="flex items-center space-x-3">
-                                @if($member['email'])
-                                <a href="mailto:{{ $member['email'] }}" class="w-8 h-8 bg-{{ $member['color'] }}-600 text-white rounded-lg flex items-center justify-center hover:bg-{{ $member['color'] }}-700 transition-colors duration-300">
-                                    <i class="fas fa-envelope text-xs"></i>
-                                </a>
-                                @endif
-                                @if($member['phone'])
-                                <a href="tel:{{ $member['phone'] }}" class="w-8 h-8 bg-{{ $member['color'] }}-600 text-white rounded-lg flex items-center justify-center hover:bg-{{ $member['color'] }}-700 transition-colors duration-300">
-                                    <i class="fas fa-phone text-xs"></i>
-                                </a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detailed Information -->
-                    <div class="space-y-4">
-                        <!-- Office Info -->
-                        <div class="bg-gray-50 rounded-xl p-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                <div>
-                                    <span class="font-medium text-gray-700">📍 Kantor:</span>
-                                    <span class="text-gray-600 block">{{ $member['office'] }}</span>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-gray-700">🕒 Jam Kerja:</span>
-                                    <span class="text-gray-600 block">{{ $member['office_hours'] }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Research Interests -->
                         <div>
-                            <p class="text-sm font-medium text-gray-700 mb-2">Bidang Penelitian:</p>
-                            <ul class="text-sm text-gray-600 space-y-1">
-                                @foreach(array_slice($member['research_interests'], 0, 3) as $interest)
-                                <li class="flex items-center">
-                                    <i class="fas fa-circle text-{{ $member['color'] }}-400 text-xs mr-2"></i>
-                                    {{ $interest }}
-                                </li>
-                                @endforeach
-                            </ul>
+                            <h3 class="font-poppins text-xl font-bold text-gray-900 mb-2">
+                                {{ $member->nama }}
+                            </h3>
+                            <p class="text-{{ $color }}-600 font-medium mb-3">{{ $member->jabatan }}</p>
                         </div>
-
-                        <!-- Social Links -->
-                        @if(count($member['social_links']) > 0)
-                        <div class="pt-4 border-t border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Profil Online:</span>
-                                <div class="flex space-x-2">
-                                    @foreach($member['social_links'] as $platform => $url)
-                                    <a href="{{ $url }}" target="_blank" class="w-8 h-8 bg-gray-200 text-gray-600 rounded-lg flex items-center justify-center hover:bg-{{ $member['color'] }}-100 hover:text-{{ $member['color'] }}-600 transition-colors duration-300">
-                                        @if($platform === 'linkedin')
-                                            <i class="fab fa-linkedin-in text-xs"></i>
-                                        @elseif($platform === 'scholar')
-                                            <i class="fas fa-graduation-cap text-xs"></i>
-                                        @elseif($platform === 'researchgate')
-                                            <i class="fab fa-researchgate text-xs"></i>
-                                        @elseif($platform === 'github')
-                                            <i class="fab fa-github text-xs"></i>
-                                        @endif
-                                    </a>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                        @endif
                     </div>
+
                 </div>
             </div>
             @endforeach
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16">
+            <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-search text-gray-400 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">Tidak ada data ditemukan</h3>
+            <p class="text-gray-500">Coba ubah kata kunci pencarian atau filter yang Anda gunakan</p>
         </div>
     </div>
 </section>
@@ -328,37 +297,6 @@
     }
 }
 
-/* Molecule Color Variants */
-.staff-molecule.amber .staff-atom.core {
-    background: radial-gradient(circle, #fbbf24, #d97706);
-    box-shadow: 0 0 25px rgba(251, 191, 36, 0.9);
-}
-
-.staff-molecule.amber .staff-atom.electron {
-    background: radial-gradient(circle, #fbbf24, #d97706);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.7);
-}
-
-.staff-molecule.orange .staff-atom.core {
-    background: radial-gradient(circle, #fb923c, #ea580c);
-    box-shadow: 0 0 25px rgba(251, 146, 60, 0.8);
-}
-
-.staff-molecule.orange .staff-atom.electron {
-    background: radial-gradient(circle, #fb923c, #ea580c);
-    box-shadow: 0 0 15px rgba(251, 146, 60, 0.7);
-}
-
-.staff-molecule.brown .staff-atom.core {
-    background: radial-gradient(circle, #a78bfa, #7c3aed);
-    box-shadow: 0 0 25px rgba(167, 139, 250, 0.8);
-}
-
-.staff-molecule.brown .staff-atom.electron {
-    background: radial-gradient(circle, #a78bfa, #7c3aed);
-    box-shadow: 0 0 15px rgba(167, 139, 250, 0.7);
-}
-
 /* ===== STAFF PAGE SPECIFIC STYLES ===== */
 .staff-hero-animate {
     opacity: 0;
@@ -392,11 +330,6 @@
     background: linear-gradient(135deg, #968c82 0%, #635849 100%);
     color: white;
     box-shadow: 0 4px 15px rgba(150, 140, 130, 0.3);
-}
-
-/* Search Input */
-#staff-search:focus {
-    transform: scale(1.02);
 }
 
 /* Animation Classes */
@@ -441,38 +374,12 @@
         width: 100%;
     }
 
-    .staff-molecule {
-        width: 40px;
-        height: 40px;
-    }
-
-    .staff-orbit-1 {
-        width: 30px;
-        height: 30px;
-    }
-
-    .staff-orbit-2 {
-        width: 40px;
-        height: 40px;
-    }
-
-    .staff-card .w-28 {
+    .staff-card .w-32 {
         width: 6rem;
     }
 
-    .staff-card .h-36 {
+    .staff-card .h-40 {
         height: 8rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .staff-card .flex-col {
-        flex-direction: column;
-    }
-
-    .staff-card .space-x-6 {
-        space-x: 0;
-        gap: 1rem;
     }
 }
 </style>
@@ -485,14 +392,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!container) return;
 
         const moleculeTypes = ['amber', 'orange', 'brown'];
-        const moleculeSizes = ['small', 'normal', 'large'];
 
         function createMolecule() {
             const molecule = document.createElement('div');
             const type = moleculeTypes[Math.floor(Math.random() * moleculeTypes.length)];
-            const size = moleculeSizes[Math.floor(Math.random() * moleculeSizes.length)];
 
-            molecule.className = `staff-molecule float ${type} ${size}`;
+            molecule.className = `staff-molecule float ${type}`;
             molecule.style.left = Math.random() * 100 + '%';
             molecule.style.animationDelay = Math.random() * 5 + 's';
             molecule.style.animationDuration = (15 + Math.random() * 10) + 's';
@@ -575,6 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterButtons = document.querySelectorAll('.staff-filter-btn');
     const staffCards = document.querySelectorAll('.staff-card');
     const searchInput = document.getElementById('staff-search');
+    const emptyState = document.getElementById('empty-state');
 
     // Filter functionality
     filterButtons.forEach(button => {
@@ -602,6 +508,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Filter cards function
     function filterCards(categoryFilter, searchTerm) {
+        let visibleCount = 0;
+
         staffCards.forEach(card => {
             const category = card.dataset.category;
             const searchData = card.dataset.search || '';
@@ -615,6 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.classList.remove('hidden');
                     card.classList.add('visible');
                 }, 50);
+                visibleCount++;
             } else {
                 card.classList.remove('visible');
                 card.classList.add('hidden');
@@ -623,6 +532,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         });
+
+        // Show/hide empty state
+        if (visibleCount === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+        }
     }
 
     // Update filter button styles
@@ -640,37 +556,6 @@ document.addEventListener('DOMContentLoaded', function() {
     staffCards.forEach(card => {
         card.classList.add('visible');
     });
-
-    // ===== PARALLAX EFFECT =====
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const parallax = document.querySelector('.staff-molecules-container');
-        if (parallax) {
-            const speed = scrolled * 0.3;
-            parallax.style.transform = `translateY(${speed}px)`;
-        }
-    });
-
-    // ===== PERFORMANCE OPTIMIZATION =====
-    const heroSection = document.querySelector('section');
-    const heroObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const molecules = entry.target.querySelectorAll('.staff-molecule');
-            if (entry.isIntersecting) {
-                molecules.forEach(molecule => {
-                    molecule.style.animationPlayState = 'running';
-                });
-            } else {
-                molecules.forEach(molecule => {
-                    molecule.style.animationPlayState = 'paused';
-                });
-            }
-        });
-    });
-
-    if (heroSection) {
-        heroObserver.observe(heroSection);
-    }
 });
 </script>
 @endsection

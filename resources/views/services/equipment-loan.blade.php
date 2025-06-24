@@ -54,6 +54,48 @@
     </div>
 </section>
 
+<!-- Success/Error Messages -->
+@if(session('success'))
+<section class="py-8 bg-green-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="bg-green-100 border border-green-200 rounded-2xl p-6 flex items-start space-x-4">
+            <div class="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check text-green-600"></i>
+            </div>
+            <div>
+                <h3 class="text-green-800 font-semibold text-lg mb-2">Berhasil!</h3>
+                <div class="text-green-700 whitespace-pre-line">{{ session('success') }}</div>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
+@if(session('error') || $errors->any())
+<section class="py-8 bg-red-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="bg-red-100 border border-red-200 rounded-2xl p-6 flex items-start space-x-4">
+            <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div>
+                <h3 class="text-red-800 font-semibold text-lg mb-2">Terjadi Kesalahan!</h3>
+                @if(session('error'))
+                    <div class="text-red-700 whitespace-pre-line">{{ session('error') }}</div>
+                @endif
+                @if($errors->any())
+                    <ul class="text-red-700 list-disc list-inside space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Equipment Section -->
 <section class="py-24 bg-gradient-to-b from-gray-50 to-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -69,6 +111,70 @@
             <p class="text-gray-600 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed">
                 Jelajahi koleksi lengkap peralatan laboratorium modern yang tersedia untuk mendukung kegiatan akademik dan penelitian Anda.
             </p>
+        </div>
+
+        <!-- How to Borrow Info -->
+        <div class="mb-16 scroll-animate" data-animation="fade-up" data-delay="100">
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-8 border border-yellow-200">
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold text-yellow-800 mb-3 flex items-center justify-center">
+                        <i class="fas fa-info-circle mr-3"></i>
+                        Cara Meminjam Alat Laboratorium
+                    </h3>
+                    <p class="text-yellow-700">Ikuti langkah-langkah mudah berikut untuk meminjam alat laboratorium</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">1</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Pilih Alat</h4>
+                        <p class="text-sm text-yellow-700">Centang kotak pada alat yang ingin dipinjam</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">2</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Atur Jumlah</h4>
+                        <p class="text-sm text-yellow-700">Tentukan jumlah unit yang diperlukan</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">3</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Ajukan</h4>
+                        <p class="text-sm text-yellow-700">Klik "Ajukan Peminjaman" dan isi formulir</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">4</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Tunggu Konfirmasi</h4>
+                        <p class="text-sm text-yellow-700">Staff lab akan konfirmasi dalam 1x24 jam</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">5</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Briefing & Ambil</h4>
+                        <p class="text-sm text-yellow-700">Ikuti briefing lalu ambil alat sesuai jadwal</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-yellow-100 rounded-xl border border-yellow-300">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-lightbulb text-yellow-600 mt-1"></i>
+                        <div class="text-sm text-yellow-700">
+                            <strong>Tips:</strong> Pastikan membawa kartu mahasiswa, surat dari dosen pembimbing, dan siap mengikuti briefing penggunaan alat untuk keamanan bersama.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Selection Controls -->
@@ -137,6 +243,7 @@
                             <option value="all">Semua Status</option>
                             <option value="available">Tersedia</option>
                             <option value="maintenance">Maintenance</option>
+                            <option value="unavailable">Habis</option>
                         </select>
                     </div>
                 </div>
@@ -162,7 +269,7 @@
                             <input type="checkbox"
                                    class="equipment-checkbox"
                                    data-equipment-id="{{ $equipment['id'] }}"
-                                   onchange="toggleEquipmentSelection({{ $equipment['id'] }})">
+                                   onchange="toggleEquipmentSelection('{{ $equipment['id'] }}')">
                             <span class="checkmark bg-white/90 backdrop-blur-sm"></span>
                         </label>
                         <div class="quantity-selector hidden bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg"
@@ -174,7 +281,7 @@
                                    max="{{ $equipment['quantity_available'] }}"
                                    value="1"
                                    data-equipment-id="{{ $equipment['id'] }}"
-                                   onchange="updateEquipmentQuantity({{ $equipment['id'] }}, this.value)">
+                                   onchange="updateEquipmentQuantity('{{ $equipment['id'] }}', this.value)">
                         </div>
                     </div>
                     @endif
@@ -182,9 +289,10 @@
 
                 <!-- Image -->
                 <div class="relative overflow-hidden h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-                    <img src="{{ asset('images/equipment/' . $equipment['image']) }}"
+                    <img src="{{ asset('images/equipment/' . ($equipment['image'] ?? 'default.jpg')) }}"
                          alt="{{ $equipment['name'] }}"
-                         class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700">
+                         class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
+                         onerror="this.src='{{ asset('images/equipment/default.jpg') }}'">
 
                     <!-- Status Badge -->
                     <div class="absolute top-4 right-4">
@@ -193,10 +301,15 @@
                             <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                             Tersedia
                         </span>
-                        @else
+                        @elseif($equipment['status'] === 'maintenance')
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
                             <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
                             Maintenance
+                        </span>
+                        @else
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                            <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                            Habis
                         </span>
                         @endif
                     </div>
@@ -204,7 +317,7 @@
                     <!-- Category Icon -->
                     <div class="absolute bottom-4 left-4">
                         <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                            <i class="{{ $equipment['icon'] }} text-white text-sm"></i>
+                            <i class="{{ $equipment['icon'] ?? 'fas fa-cog' }} text-white text-sm"></i>
                         </div>
                     </div>
 
@@ -227,7 +340,7 @@
                             {{ $equipment['category'] }}
                         </div>
                         <h3 class="text-xl font-bold text-gray-900 mb-2 leading-tight">{{ $equipment['name'] }}</h3>
-                        <p class="text-sm text-gray-500 font-medium">{{ $equipment['model'] }}</p>
+                        <p class="text-sm text-gray-500 font-medium">{{ $equipment['model'] ?? 'Model tidak tersedia' }}</p>
                     </div>
 
                     <!-- Description -->
@@ -239,16 +352,20 @@
                     <div class="mb-4">
                         <h4 class="text-sm font-semibold text-gray-900 mb-2">Spesifikasi Utama</h4>
                         <div class="space-y-1">
-                            @foreach(array_slice($equipment['specifications'], 0, 2) as $spec)
-                            <div class="flex items-center text-xs text-gray-600">
-                                <i class="fas fa-check-circle text-blue-500 mr-2 flex-shrink-0"></i>
-                                <span>{{ $spec }}</span>
-                            </div>
-                            @endforeach
-                            @if(count($equipment['specifications']) > 2)
-                            <div class="text-xs text-blue-600 font-medium">
-                                +{{ count($equipment['specifications']) - 2 }} spesifikasi lainnya
-                            </div>
+                            @if(!empty($equipment['specifications']))
+                                @foreach(array_slice($equipment['specifications'], 0, 2) as $spec)
+                                <div class="flex items-center text-xs text-gray-600">
+                                    <i class="fas fa-check-circle text-blue-500 mr-2 flex-shrink-0"></i>
+                                    <span>{{ $spec }}</span>
+                                </div>
+                                @endforeach
+                                @if(count($equipment['specifications']) > 2)
+                                <div class="text-xs text-blue-600 font-medium">
+                                    +{{ count($equipment['specifications']) - 2 }} spesifikasi lainnya
+                                </div>
+                                @endif
+                            @else
+                                <div class="text-xs text-gray-500">Spesifikasi akan diinformasikan saat briefing</div>
                             @endif
                         </div>
                     </div>
@@ -257,20 +374,20 @@
                     <div class="flex items-center justify-between text-sm mb-6">
                         <div class="flex items-center text-gray-600">
                             <i class="fas fa-clock text-blue-500 mr-2"></i>
-                            <span>{{ $equipment['loan_duration'] }}</span>
+                            <span>{{ $equipment['loan_duration'] ?? 'Sesuai kesepakatan' }}</span>
                         </div>
                     </div>
 
                     <!-- Actions -->
                     <div class="space-y-3">
-                        <button onclick="showEquipmentDetail({{ $equipment['id'] }})"
-                                class="w-full bg-blue-500 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center">
+                        <a href="{{ route('equipment.detail', $equipment['id']) }}"
+                           class="w-full bg-blue-500 text-white px-4 py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center">
                             <i class="fas fa-eye mr-2"></i>
                             Lihat Detail
-                        </button>
+                        </a>
 
                         @if($equipment['status'] === 'available' && $equipment['quantity_available'] > 0)
-                        <button onclick="quickAddToSelection({{ $equipment['id'] }})"
+                        <button onclick="quickAddToSelection('{{ $equipment['id'] }}')"
                                 class="w-full border-2 border-blue-500 text-blue-500 px-4 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center justify-center">
                             <i class="fas fa-plus mr-2"></i>
                             Tambah ke Pilihan
@@ -352,57 +469,52 @@
             </div>
 
             <!-- Form -->
-            <form id="bulkLoanForm" class="space-y-6">
+            <form id="bulkLoanForm" action="{{ route('equipment.request') }}" method="POST" class="space-y-6">
+                @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Personal Info -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap *</label>
-                        <input type="text" name="name" required
+                        <input type="text" name="name" required value="{{ old('name') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">NIM *</label>
-                        <input type="text" name="student_id" required
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">NIM/NIP *</label>
+                        <input type="text" name="student_id" required value="{{ old('student_id') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-                        <input type="email" name="email" required
+                        <input type="email" name="email" required value="{{ old('email') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon *</label>
-                        <input type="tel" name="phone" required
+                        <input type="tel" name="phone" required value="{{ old('phone') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai *</label>
-                        <input type="date" name="start_date" required
+                        <input type="date" name="start_date" required value="{{ old('start_date') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Selesai *</label>
-                        <input type="date" name="end_date" required
+                        <input type="date" name="end_date" required value="{{ old('end_date') }}"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Dosen Pembimbing *</label>
-                    <input type="text" name="supervisor" required
-                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Penggunaan *</label>
                     <textarea name="purpose" rows="4" required
                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Jelaskan tujuan dan rencana penggunaan alat-alat tersebut..."></textarea>
+                              placeholder="Jelaskan tujuan dan rencana penggunaan alat-alat tersebut...">{{ old('purpose') }}</textarea>
                 </div>
 
                 <!-- Hidden fields for selected equipment data -->
@@ -413,7 +525,7 @@
                 <div class="flex items-start space-x-3">
                     <input type="checkbox" id="bulk-terms" required class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                     <label for="bulk-terms" class="text-sm text-gray-600">
-                        Saya menyetujui <a href="#" class="text-blue-600 hover:underline">syarat dan ketentuan</a> peminjaman alat laboratorium.
+                        Saya menyetujui <a href="#" class="text-blue-600 hover:underline">syarat dan ketentuan</a> peminjaman alat laboratorium dan akan mengikuti briefing yang diberikan.
                     </label>
                 </div>
 
@@ -423,7 +535,7 @@
                             class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors duration-200">
                         Batal
                     </button>
-                    <button type="submit"
+                    <button type="submit" id="submit-btn"
                             class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200">
                         Kirim Permohonan
                     </button>
@@ -671,7 +783,7 @@ function initSelectionControls() {
         availableEquipment.forEach(checkbox => {
             if (!checkbox.checked) {
                 checkbox.checked = true;
-                toggleEquipmentSelection(parseInt(checkbox.dataset.equipmentId));
+                toggleEquipmentSelection(checkbox.dataset.equipmentId);
             }
         });
     });
@@ -681,7 +793,7 @@ function initSelectionControls() {
         const selectedCheckboxes = document.querySelectorAll('.equipment-checkbox:checked');
         selectedCheckboxes.forEach(checkbox => {
             checkbox.checked = false;
-            toggleEquipmentSelection(parseInt(checkbox.dataset.equipmentId));
+            toggleEquipmentSelection(checkbox.dataset.equipmentId);
         });
         window.selectedEquipment = {};
         updateSelectionUI();
@@ -843,12 +955,12 @@ function openBulkLoanModal() {
         <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                    <i class="${equipment.icon} text-white"></i>
+                    <i class="${equipment.icon || 'fas fa-cog'} text-white"></i>
                 </div>
                 <div class="flex-1">
                     <div class="font-semibold text-gray-900">${equipment.name}</div>
-                    <div class="text-sm text-gray-600">${equipment.model}</div>
-                    <div class="text-sm text-blue-600">Max: ${equipment.loan_duration}</div>
+                    <div class="text-sm text-gray-600">${equipment.model || 'Model tidak tersedia'}</div>
+                    <div class="text-sm text-blue-600">Max: ${equipment.loan_duration || 'Sesuai kesepakatan'}</div>
                 </div>
                 <div class="text-right">
                     <div class="flex items-center space-x-2">
@@ -859,12 +971,12 @@ function openBulkLoanModal() {
                                max="${equipment.quantity_available}"
                                value="${equipment.quantity}"
                                data-equipment-id="${equipment.id}"
-                               onchange="updateModalQuantity(${equipment.id}, this.value)">
+                               onchange="updateModalQuantity('${equipment.id}', this.value)">
                     </div>
                     <div class="text-xs text-gray-500 mt-1">Tersedia: ${equipment.quantity_available}</div>
                 </div>
             </div>
-            <button onclick="removeFromSelection(${equipment.id})"
+            <button onclick="removeFromSelection('${equipment.id}')"
                     class="text-red-500 hover:text-red-700 p-2 ml-4">
                 <i class="fas fa-times"></i>
             </button>
@@ -949,41 +1061,19 @@ function removeFromSelection(equipmentId) {
     }
 }
 
-function showEquipmentDetail(equipmentId) {
-    window.location.href = `/services/equipment-loan/${equipmentId}`;
-}
-
 // Handle form submission
 document.getElementById('bulkLoanForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
     const selectedEquipmentArray = Object.values(window.selectedEquipment);
     if (selectedEquipmentArray.length === 0) {
+        e.preventDefault();
         alert('Pilih alat terlebih dahulu.');
         return;
     }
 
-    const totalUnits = selectedEquipmentArray.reduce((sum, eq) => sum + eq.quantity, 0);
-
-    alert(`Permohonan peminjaman untuk ${selectedEquipmentArray.length} jenis alat (${totalUnits} unit) berhasil dikirim! Kami akan menghubungi Anda dalam 1x24 jam.`);
-
-    // Clear selection
-    window.selectedEquipment = {};
-    document.querySelectorAll('.equipment-checkbox:checked').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    document.querySelectorAll('.equipment-card.selected').forEach(card => {
-        card.classList.remove('selected');
-    });
-    document.querySelectorAll('.quantity-selector').forEach(selector => {
-        selector.classList.add('hidden');
-    });
-    document.querySelectorAll('.quantity-input').forEach(input => {
-        input.value = 1;
-    });
-    updateSelectionUI();
-
-    closeBulkLoanModal();
+    // Disable submit button to prevent double submission
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Mengirim Permohonan...';
 });
 </script>
 @endsection

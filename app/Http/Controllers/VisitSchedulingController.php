@@ -174,20 +174,7 @@ class VisitSchedulingController extends Controller
     private function sendNotificationEmail($kunjungan)
     {
         try {
-            // You can implement email sending here
-            // Example using Laravel Mail:
-            /*
-            Mail::send('emails.visit-request', compact('kunjungan'), function ($message) use ($kunjungan) {
-                $message->to('admin@lab-fisika.ac.id')
-                        ->subject('Permintaan Jadwal Kunjungan Baru - ' . $kunjungan->namaPengunjung);
-            });
-
-            // Send confirmation email to visitor
-            Mail::send('emails.visit-confirmation', compact('kunjungan'), function ($message) use ($kunjungan) {
-                $message->to($kunjungan->email)
-                        ->subject('Konfirmasi Permintaan Jadwal Kunjungan - Lab Fisika Dasar');
-            });
-            */
+            
         } catch (\Exception $e) {
             // Log the error but don't break the flow
             Log::error('Failed to send notification email: ' . $e->getMessage());

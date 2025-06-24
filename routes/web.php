@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StaffController;
@@ -15,7 +14,6 @@ use App\Http\Controllers\VisitSchedulingController;
 | Main Routes
 |--------------------------------------------------------------------------
 */
-
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/equipment', [HomeController::class, 'equipment'])->name('equipment');
@@ -27,7 +25,6 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 | Staff & Facilities Routes
 |--------------------------------------------------------------------------
 */
-
 Route::get('/staff', [StaffController::class, 'index'])->name('staff');
 Route::get('/facilities', [FacilitiesController::class, 'index'])->name('facilities');
 
@@ -36,21 +33,22 @@ Route::get('/facilities', [FacilitiesController::class, 'index'])->name('facilit
 | Articles & Gallery Routes (Simple Names)
 |--------------------------------------------------------------------------
 */
-
 // Articles
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles.show')->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
 /*
 |--------------------------------------------------------------------------
-| Services Routes (Existing - No Changes)
+| Services Routes
 |--------------------------------------------------------------------------
 */
-
 // Services - Equipment Loan
 Route::prefix('services/equipment-loan')->name('equipment.')->group(function () {
     Route::get('/', [EquipmentLoanController::class, 'index'])->name('loan');
     Route::get('/{id}', [EquipmentLoanController::class, 'show'])->name('detail');
-    Route::post('/{id}/request', [EquipmentLoanController::class, 'requestLoan'])->name('request');
+    Route::post('/request', [EquipmentLoanController::class, 'requestLoan'])->name('request');
+    Route::get('/availability/check', [EquipmentLoanController::class, 'checkAvailability'])->name('check-availability');
+    Route::get('/history', [EquipmentLoanController::class, 'getLoanHistory'])->name('history');
 });
 
 // Services - Testing Services

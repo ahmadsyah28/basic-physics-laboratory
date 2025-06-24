@@ -206,32 +206,7 @@
     </div>
 </section>
 
-<!-- CTA Section -->
-<section class="py-20 bg-gradient-to-r from-blue-600 to-blue-800 relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.3"><circle cx="30" cy="30" r="2"/></g></svg>')"></div>
-    </div>
 
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center scroll-animate" data-animation="fade-up">
-            <h3 class="text-4xl md:text-5xl font-bold text-white mb-6">
-                Butuh Informasi Lebih Lanjut?
-            </h3>
-            <p class="text-blue-100 text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
-                Hubungi tim kami untuk konsultasi mengenai penggunaan fasilitas laboratorium atau untuk mengatur kunjungan dan demo peralatan.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <a href="#" class="bg-white text-blue-600 px-8 py-4 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center">
-                    <i class="fas fa-phone mr-3"></i>Hubungi Kami
-                </a>
-                <a href="#" class="border-2 border-white text-white px-8 py-4 rounded-2xl font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center">
-                    <i class="fas fa-calendar mr-3"></i>Jadwalkan Kunjungan
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
 
 <style>
 /* Enhanced Gradient Text */

@@ -120,7 +120,7 @@ class AlatSeeder extends Seeder
                     'Battery Life: 3.8 years',
                     'IP67 Protection'
                 ],
-                
+
                 'durasi_pinjam' => '1-30 hari',
                 'icon' => 'fas fa-ruler-combined'
             ]

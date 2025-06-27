@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\BiodataPengurus;
 use App\Models\Gambar;
+use Illuminate\Support\Str;
 
 class StaffController extends Controller
 {
@@ -48,12 +49,12 @@ class StaffController extends Controller
         // Upload dan simpan foto jika ada
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('images/staff'), $filename);
 
             Gambar::create([
                 'pengurus_id' => $pengurus->id,
-                'url' => 'staff/' . $filename,
+                'url' => 'images/staff/' . $filename, // PERBAIKAN: tambah 'images/'
                 'kategori' => 'PENGURUS'
             ]);
         }
@@ -77,16 +78,24 @@ class StaffController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama
-            $pengurus->gambar()->delete();
+            // Hapus foto lama dari file system
+            $oldPhoto = $pengurus->fotoProfil;
+            if ($oldPhoto) {
+                $oldFilePath = public_path($oldPhoto->url);
+                if (file_exists($oldFilePath)) {
+                    unlink($oldFilePath);
+                }
+                $oldPhoto->delete();
+            }
 
+            // Upload foto baru
             $file = $request->file('foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('images/staff'), $filename);
 
             Gambar::create([
                 'pengurus_id' => $pengurus->id,
-                'url' => 'staff/' . $filename,
+                'url' => 'images/staff/' . $filename, // PERBAIKAN: tambah 'images/'
                 'kategori' => 'PENGURUS'
             ]);
         }
@@ -97,6 +106,16 @@ class StaffController extends Controller
     public function destroy($id)
     {
         $pengurus = BiodataPengurus::findOrFail($id);
+
+        // Hapus foto dari file system
+        $photos = $pengurus->gambar;
+        foreach ($photos as $photo) {
+            $filePath = public_path($photo->url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
         $pengurus->gambar()->delete();
         $pengurus->delete();
 

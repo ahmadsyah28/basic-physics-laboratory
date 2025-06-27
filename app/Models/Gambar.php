@@ -12,6 +12,7 @@ class Gambar extends Model
     protected $table = 'gambar';
 
     protected $fillable = [
+        'id',
         'pengurus_id',
         'acara_id',
         'url',
@@ -43,6 +44,6 @@ class Gambar extends Model
             return $this->url;
         }
 
-        return asset('images/' . $this->url);
+        return asset('storage/' . $this->url);
     }
 }

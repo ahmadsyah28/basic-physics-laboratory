@@ -124,8 +124,8 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.visimisi.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.articles.*') ? 'active' : '' }}">
-                            <i class="fas fa-newspaper mr-3 w-5"></i>
+                        <a href="{{ route('admin.visimisi.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visimisi.*') ? 'active' : '' }}">
+                            <i class="fas fa-bullseye mr-3 w-5"></i>
                             <span>Kelola Visi Misi</span>
                         </a>
                     </li>

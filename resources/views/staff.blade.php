@@ -134,9 +134,11 @@
                         <div class="relative inline-block mb-4">
                             <div class="w-32 h-40 bg-gradient-to-br from-{{ $color }}-200 to-{{ $color }}-300 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-500 overflow-hidden mx-auto">
                                 @if($member->fotoProfil)
-                                    <img src="{{ asset('images/' . $member->fotoProfil->url) }}"
-                                         alt="{{ $member->nama }}"
-                                         class="w-full h-full object-cover rounded-xl">
+                                    <img src="{{ asset($member->fotoProfil->url) }}"
+                                        alt="{{ $member->nama }}"
+                                        class="w-full h-full object-cover rounded-xl"
+                                        onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-user text-{{ $color }}-600 text-4xl\'></i>';">
+
                                 @else
                                     <i class="fas fa-user text-{{ $color }}-600 text-4xl"></i>
                                 @endif

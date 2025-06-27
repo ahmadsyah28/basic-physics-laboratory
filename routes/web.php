@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\AdminTestingServicesController;
 use App\Http\Controllers\Admin\AdminVisitController;
 use App\Http\Controllers\Admin\AdminArticleController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminVisiMisiController;
 /*
 |--------------------------------------------------------------------------
 | Main Routes
@@ -90,6 +91,8 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
 
     // Staff Management
     Route::resource('staff', AdminStaffController::class);
+    // Di dalam group admin
+    Route::get('/staff/{staff}/edit', [AdminStaffController::class, 'edit'])->name('staff.edit');
 
     // Equipment Management
     Route::prefix('equipment')->name('equipment.')->group(function () {
@@ -147,5 +150,14 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
     // User Management (Admin users)
     Route::middleware([\App\Http\Middleware\SuperAdminMiddleware::class])->group(function () {
         Route::resource('users', AdminUserController::class);
+    });
+
+    // Vision & Mission Management
+    Route::prefix('visimisi')->name('visimisi.')->group(function () {
+        Route::get('/', [AdminVisiMisiController::class, 'index'])->name('index');
+        Route::put('/profil', [AdminVisiMisiController::class, 'updateProfil'])->name('update-profil');
+        Route::post('/misi', [AdminVisiMisiController::class, 'storeMisi'])->name('store-misi');
+        Route::put('/misi/{misi}', [AdminVisiMisiController::class, 'updateMisi'])->name('update-misi');
+        Route::delete('/misi/{misi}', [AdminVisiMisiController::class, 'destroyMisi'])->name('destroy-misi');
     });
 });

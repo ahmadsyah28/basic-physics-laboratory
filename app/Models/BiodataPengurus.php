@@ -35,6 +35,13 @@ class BiodataPengurus extends Model
                     ->latest();
     }
 
+    // Helper untuk mendapatkan URL foto
+    public function getFotoUrlAttribute()
+    {
+        $foto = $this->fotoProfil;
+        return $foto ? $foto->url : null;
+    }
+
     // Helper untuk kategori jabatan
     public function getKategoriJabatanAttribute()
     {
@@ -93,6 +100,25 @@ class BiodataPengurus extends Model
                 return 'blue';
             default:
                 return 'gray';
+        }
+    }
+
+    public function getKategoriJabatan()
+    {
+        $jabatan = strtolower($this->jabatan);
+        if (str_contains($jabatan, 'kepala')) return 'head-lecturer';
+        elseif (str_contains($jabatan, 'dosen') || str_contains($jabatan, 'pengajar')) return 'lecturer';
+        elseif (str_contains($jabatan, 'laboran')) return 'technician';
+        return 'other';
+    }
+
+    public function getIconBadge()
+    {
+        switch ($this->getKategoriJabatan()) {
+            case 'head-lecturer': return 'star';
+            case 'lecturer': return 'graduation-cap';
+            case 'technician': return 'tools';
+            default: return 'user';
         }
     }
 }

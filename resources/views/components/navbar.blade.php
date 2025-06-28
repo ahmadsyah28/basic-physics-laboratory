@@ -41,9 +41,9 @@
                                 <a href="{{ route('equipment.loan') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Peminjaman Alat
                                 </a>
-                                <a href="{{ route('testing.services') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                {{-- <a href="{{ route('testing.services') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Layanan Pengujian
-                                </a>
+                                </a> --}}
                                 <a href="{{ route('visit.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Jadwalkan Kunjungan
                                 </a>
@@ -86,9 +86,9 @@
                     <a href="{{ route('equipment.loan') }}" class="mobile-nav-link block px-3 py-2 text-gray-300 hover:text-yellow-400">
                         Peminjaman Alat
                     </a>
-                    <a href="{{ route('visit.index') }}" class="mobile-nav-link block px-3 py-2 text-gray-300 hover:text-yellow-400">
+                    {{-- <a href="{{ route('visit.index') }}" class="mobile-nav-link block px-3 py-2 text-gray-300 hover:text-yellow-400">
                         Layanan Pengujian
-                    </a>
+                    </a> --}}
                 </div>
             </div>
             <a href="{{ route('facilities') }}#fasilitas" class="mobile-nav-link block px-3 py-2 text-white hover:text-yellow-400 font-medium">Fasilitas</a>

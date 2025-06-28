@@ -56,12 +56,12 @@ Route::prefix('services/equipment-loan')->name('equipment.')->group(function () 
     Route::get('/history', [EquipmentLoanController::class, 'getLoanHistory'])->name('history');
 });
 // Services - Testing Services
-Route::prefix('services/testing')->name('testing.')->group(function () {
-    Route::get('/', [TestingServicesController::class, 'index'])->name('services');
-    Route::get('/{id}', [TestingServicesController::class, 'show'])->name('detail');
-    Route::post('/request', [TestingServicesController::class, 'requestTest'])->name('request');
-    Route::get('/schedule-availability', [TestingServicesController::class, 'getScheduleAvailability'])->name('schedule-availability');
-});
+// Route::prefix('services/testing')->name('testing.')->group(function () {
+//     Route::get('/', [TestingServicesController::class, 'index'])->name('services');
+//     Route::get('/{id}', [TestingServicesController::class, 'show'])->name('detail');
+//     Route::post('/request', [TestingServicesController::class, 'requestTest'])->name('request');
+//     Route::get('/schedule-availability', [TestingServicesController::class, 'getScheduleAvailability'])->name('schedule-availability');
+// });
 // Services - Visit Scheduling
 Route::prefix('services/visit-scheduling')->name('visit.')->group(function () {
     Route::get('/', [VisitSchedulingController::class, 'index'])->name('index');
@@ -112,22 +112,22 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
     });
 
     // Testing Types Management
-    Route::prefix('testing-types')->name('testing-types.')->group(function () {
-        Route::get('/', [AdminTestingServicesController::class, 'testingTypesIndex'])->name('index');
-        Route::get('/create', [AdminTestingServicesController::class, 'testingTypesCreate'])->name('create');
-        Route::post('/', [AdminTestingServicesController::class, 'testingTypesStore'])->name('store');
-        Route::get('/{jenisPengujian}/edit', [AdminTestingServicesController::class, 'testingTypesEdit'])->name('edit');
-        Route::put('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesUpdate'])->name('update');
-        Route::delete('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesDestroy'])->name('destroy');
-    });
+    // Route::prefix('testing-types')->name('testing-types.')->group(function () {
+    //     Route::get('/', [AdminTestingServicesController::class, 'testingTypesIndex'])->name('index');
+    //     Route::get('/create', [AdminTestingServicesController::class, 'testingTypesCreate'])->name('create');
+    //     Route::post('/', [AdminTestingServicesController::class, 'testingTypesStore'])->name('store');
+    //     Route::get('/{jenisPengujian}/edit', [AdminTestingServicesController::class, 'testingTypesEdit'])->name('edit');
+    //     Route::put('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesUpdate'])->name('update');
+    //     Route::delete('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesDestroy'])->name('destroy');
+    // });
 
     // Testing Services Management
-    Route::prefix('testing')->name('testing.')->group(function () {
-        Route::get('/', [AdminTestingServicesController::class, 'index'])->name('index');
-        Route::get('/{pengujian}', [AdminTestingServicesController::class, 'show'])->name('show');
-        Route::put('/{pengujian}/status', [AdminTestingServicesController::class, 'updateStatus'])->name('update-status');
-        Route::post('/{pengujian}/upload-results', [AdminTestingServicesController::class, 'uploadResults'])->name('upload-results');
-    });
+    // Route::prefix('testing')->name('testing.')->group(function () {
+    //     Route::get('/', [AdminTestingServicesController::class, 'index'])->name('index');
+    //     Route::get('/{pengujian}', [AdminTestingServicesController::class, 'show'])->name('show');
+    //     Route::put('/{pengujian}/status', [AdminTestingServicesController::class, 'updateStatus'])->name('update-status');
+    //     Route::post('/{pengujian}/upload-results', [AdminTestingServicesController::class, 'uploadResults'])->name('upload-results');
+    // });
 
     // Visit Scheduling Management
     Route::prefix('visits')->name('visits.')->group(function () {

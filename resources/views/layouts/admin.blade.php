@@ -93,7 +93,7 @@
                             <span>Peminjaman Alat</span>
                         </a>
                     </li>
-                    <li>
+                    {{-- <li>
                         <a href="{{ route('admin.testing-types.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.testing-types.*') ? 'active' : '' }}">
                             <i class="fas fa-vial mr-3 w-5"></i>
                             <span>Jenis Pengujian</span>
@@ -104,7 +104,7 @@
                             <i class="fas fa-flask mr-3 w-5"></i>
                             <span>Kelola Pengujian</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <a href="{{ route('admin.visits.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visits.*') && !request()->routeIs('admin.visits.calendar') ? 'active' : '' }}">
                             <i class="fas fa-calendar-check mr-3 w-5"></i>

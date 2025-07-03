@@ -38,23 +38,6 @@ class PeminjamanItem extends Model
         return $this->belongsTo(Alat::class, 'alat_id');
     }
 
-
-    /**
-     * Scope untuk filter berdasarkan alat
-     */
-    public function scopeForAlat($query, $alatId)
-    {
-        return $query->where('alat_id', $alatId);
-    }
-
-    /**
-     * Scope untuk filter berdasarkan peminjaman
-     */
-    public function scopeForPeminjaman($query, $peminjamanId)
-    {
-        return $query->where('peminjamanId', $peminjamanId);
-    }
-
     /**
      * Boot method for model events
      */
@@ -67,10 +50,6 @@ class PeminjamanItem extends Model
             $alat = Alat::find($item->alat_id);
             if (!$alat) {
                 throw new \Exception('Alat tidak ditemukan');
-            }
-
-            if ($alat->isBroken) {
-                throw new \Exception("Alat {$alat->nama} sedang dalam perbaikan");
             }
 
             // Check if requested quantity is available
@@ -95,10 +74,6 @@ class PeminjamanItem extends Model
             $alat = Alat::find($item->alat_id);
             if (!$alat) {
                 throw new \Exception('Alat tidak ditemukan');
-            }
-
-            if ($alat->isBroken) {
-                throw new \Exception("Alat {$alat->nama} sedang dalam perbaikan");
             }
 
             // Check if updated quantity is available

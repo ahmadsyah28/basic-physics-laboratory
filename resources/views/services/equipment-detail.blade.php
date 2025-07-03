@@ -37,7 +37,7 @@
             <div class="scroll-animate" data-animation="slide-left">
                 <div class="relative">
                     <div class="aspect-w-4 aspect-h-3 rounded-2xl overflow-hidden shadow-2xl">
-                        <img src="{{ asset('images/equipment/' . ($equipment['image'] ?? 'default.jpg')) }}"
+                        <img src="{{ asset('images/equipment/' . $equipment['image']) }}"
                              alt="{{ $equipment['name'] }}"
                              class="w-full h-full object-cover"
                              onerror="this.src='{{ asset('images/equipment/default.jpg') }}'">
@@ -80,8 +80,7 @@
                         {{ $equipment['category'] }}
                     </div>
                     <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">{{ $equipment['name'] }}</h1>
-                    <p class="text-xl text-gray-600 font-medium mb-2">{{ $equipment['model'] ?? 'Model tidak tersedia' }}</p>
-                    <p class="text-gray-700 leading-relaxed">{{ $equipment['description'] }}</p>
+                    <p class="text-xl text-gray-600 font-medium mb-4">Kode: {{ $equipment['model'] ?? 'Model tidak tersedia' }}</p>
                 </div>
 
                 <!-- Availability Info -->
@@ -105,18 +104,6 @@
                     </div>
                 </div>
 
-                <!-- How to Borrow Info -->
-                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 mb-8 border border-blue-200">
-                    <h3 class="text-lg font-bold text-blue-800 mb-4 flex items-center">
-                        Kembali untuk Meminjam Alat
-                    </h3>
-                    <div class="text-blue-700 text-sm">
-                        <p class="mb-3">Untuk meminjam alat ini, silakan kembali ke halaman utama peminjaman alat dan ikuti panduan yang tersedia.</p>
-                        <p class="text-xs text-blue-600">Pastikan Anda sudah menyiapkan kartu mahasiswa dan surat dari dosen pembimbing sebelum mengajukan peminjaman.</p>
-                    </div>
-                </div>
-
-
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mb-8">
                     <a href="{{ route('equipment.loan') }}"
@@ -128,112 +115,104 @@
             </div>
         </div>
 
-        <!-- Detailed Information Tabs -->
+        <!-- Full Description & Specifications -->
         <div class="mt-16 scroll-animate" data-animation="fade-up" data-delay="400">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button class="tab-button active border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm"
-                            data-tab="specifications">
-                        Spesifikasi
-                    </button>
-                    <button class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-semibold text-sm"
-                            data-tab="manual">
-                        Panduan Penggunaan
-                    </button>
-                </nav>
-            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Detail & Spesifikasi Alat</h3>
 
-            <!-- Tab Contents -->
-            <div class="mt-8">
-                <!-- Specifications Tab -->
-                <div id="specifications-tab" class="tab-content">
-                    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Spesifikasi Teknis</h3>
-                        @if(!empty($equipment['specifications']) && count($equipment['specifications']) > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                @foreach($equipment['specifications'] as $spec)
-                                <div class="flex items-start space-x-3">
-                                    <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <i class="fas fa-check text-blue-600 text-xs"></i>
-                                    </div>
-                                    <span class="text-gray-700 leading-relaxed">{{ $spec }}</span>
-                                </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-8">
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-cog text-gray-400 text-xl"></i>
-                                </div>
-                                <h4 class="text-lg font-semibold text-gray-900 mb-2">Spesifikasi Tidak Tersedia</h4>
-                                <p class="text-gray-600">Spesifikasi teknis akan dijelaskan saat briefing penggunaan alat.</p>
-                            </div>
-                        @endif
+                <!-- Full Description -->
+                <div class="prose max-w-none text-gray-700 leading-relaxed">
+                    {!! nl2br(e($equipment['description'])) !!}
+                </div>
+
+                <!-- Additional Equipment Info -->
+                @if(isset($equipment['price']) && $equipment['price'])
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center p-4 bg-gray-50 rounded-xl">
+                            <div class="text-2xl font-bold text-gray-900">{{ $equipment['quantity_total'] }}</div>
+                            <div class="text-sm text-gray-600">Total Unit</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-xl">
+                            <div class="text-2xl font-bold text-green-600">{{ $equipment['quantity_available'] }}</div>
+                            <div class="text-sm text-gray-600">Unit Tersedia</div>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-xl">
+                            <div class="text-2xl font-bold text-blue-600">Rp {{ number_format($equipment['price'], 0, ',', '.') }}</div>
+                            <div class="text-sm text-gray-600">Nilai Aset</div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- General Guidelines -->
+        <div class="mt-12 scroll-animate" data-animation="fade-up" data-delay="600">
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Panduan Umum Penggunaan</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-play-circle text-blue-500 mr-2"></i>
+                            Sebelum Penggunaan
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Periksa kelengkapan alat dan aksesoris
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Pastikan kondisi alat dalam keadaan baik
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Ikuti briefing dari staff laboratorium
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Siapkan area kerja yang bersih dan aman
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
+                            Keselamatan & Pengembalian
+                        </h4>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Gunakan APD yang sesuai
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Jangan operasikan tanpa pengawasan
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Bersihkan alat setelah penggunaan
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1 text-sm"></i>
+                                Laporkan kerusakan segera ke staff
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-
-
-                <!-- Manual Tab -->
-                <div id="manual-tab" class="tab-content hidden">
-                    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Panduan Penggunaan</h3>
-                        <div class="prose max-w-none">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                                        <i class="fas fa-play-circle text-blue-500 mr-2"></i>
-                                        Persiapan Alat
-                                    </h4>
-                                    <ol class="space-y-2 text-gray-700">
-                                        <li>1. Periksa kelengkapan alat dan aksesoris</li>
-                                        <li>2. Pastikan kondisi alat dalam keadaan baik</li>
-                                        <li>3. Lakukan kalibrasi jika diperlukan</li>
-                                        <li>4. Siapkan area kerja yang bersih dan aman</li>
-                                        <li>5. Baca manual penggunaan dengan teliti</li>
-                                    </ol>
-                                </div>
-                                <div>
-                                    <h4 class="text-lg font-semibold text-gray-900 mb-4">
-                                        <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
-                                        Keamanan
-                                    </h4>
-                                    <ol class="space-y-2 text-gray-700">
-                                        <li>1. Gunakan APD yang sesuai</li>
-                                        <li>2. Jangan operasikan tanpa pengawasan</li>
-                                        <li>3. Matikan alat setelah penggunaan</li>
-                                        <li>4. Laporkan kerusakan segera</li>
-                                        <li>5. Ikuti prosedur darurat jika terjadi masalah</li>
-                                    </ol>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 space-y-6">
-                                <div class="p-6 bg-blue-50 rounded-xl border border-blue-200">
-                                    <h4 class="font-semibold text-blue-900 mb-3">
-                                        <i class="fas fa-info-circle mr-2"></i>Prosedur Standar
-                                    </h4>
-                                    <div class="text-sm text-blue-700 space-y-2">
-                                        <p>• <strong>Sebelum Penggunaan:</strong> Lakukan pengecekan visual dan fungsional</p>
-                                        <p>• <strong>Selama Penggunaan:</strong> Monitor kondisi alat secara berkala</p>
-                                        <p>• <strong>Setelah Penggunaan:</strong> Bersihkan dan kembalikan ke posisi semula</p>
-                                        <p>• <strong>Pelaporan:</strong> Laporkan segera jika terjadi kerusakan atau abnormalitas</p>
-                                    </div>
-                                </div>
-
-                                <div class="p-6 bg-red-50 rounded-xl border border-red-200">
-                                    <h4 class="font-semibold text-red-900 mb-3">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>Peringatan Penting
-                                    </h4>
-                                    <p class="text-sm text-red-700">
-                                        Alat ini memerlukan penanganan khusus. Pastikan Anda telah mendapat briefing dari staff laboratorium sebelum menggunakan.
-                                        Penggunaan yang tidak sesuai prosedur dapat menyebabkan kerusakan alat dan membahayakan keselamatan.
-                                        <strong class="block mt-2">Hubungi staff laboratorium jika ragu dalam pengoperasian.</strong>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-8 p-6 bg-red-50 rounded-xl border border-red-200">
+                    <h4 class="font-semibold text-red-900 mb-3">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Penting untuk Diperhatikan
+                    </h4>
+                    <p class="text-sm text-red-700">
+                        Setiap alat memiliki karakteristik dan prosedur khusus.
+                        <strong>Wajib mengikuti briefing dari staff laboratorium</strong> sebelum menggunakan alat untuk memastikan keselamatan dan penggunaan yang optimal.
+                        Hubungi staff laboratorium jika ada pertanyaan atau kendala saat penggunaan.
+                    </p>
                 </div>
             </div>
         </div>
@@ -241,11 +220,6 @@
 </section>
 
 <style>
-.tab-button.active {
-    border-color: rgb(59 130 246);
-    color: rgb(37 99 235);
-}
-
 /* Scroll animations */
 .scroll-animate {
     opacity: 0;
@@ -273,22 +247,6 @@
     transform: translateY(0) translateX(0);
 }
 
-/* Tab content transitions */
-.tab-content {
-    transition: opacity 0.3s ease-in-out;
-}
-
-.tab-content.hidden {
-    opacity: 0;
-}
-
-/* Enhanced gradient text */
-.bg-clip-text {
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 /* Image aspect ratio */
 .aspect-w-4 {
     position: relative;
@@ -304,46 +262,22 @@
     bottom: 0;
     left: 0;
 }
+
+/* Prose styling for description */
+.prose {
+    max-width: none;
+}
+
+.prose p {
+    margin-bottom: 1rem;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize scroll animations
     initScrollAnimations();
-
-    // Initialize tabs
-    initTabs();
 });
-
-function initTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetTab = this.dataset.tab;
-
-            // Update button states
-            tabButtons.forEach(btn => {
-                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-
-            this.classList.remove('border-transparent', 'text-gray-500');
-            this.classList.add('active', 'border-blue-500', 'text-blue-600');
-
-            // Update content visibility
-            tabContents.forEach(content => {
-                content.classList.add('hidden');
-            });
-
-            const targetContent = document.getElementById(targetTab + '-tab');
-            if (targetContent) {
-                targetContent.classList.remove('hidden');
-            }
-        });
-    });
-}
 
 function initScrollAnimations() {
     const animatedElements = document.querySelectorAll('.scroll-animate');

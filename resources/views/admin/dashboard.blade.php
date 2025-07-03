@@ -189,11 +189,11 @@
                 </div>
             </div>
             <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            <a href="{{ route('admin.equipment-loan.index') }}"
+            {{-- <a href="{{ route('admin.equipment-loan.index') }}"
                class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
                 Kelola peminjaman
                 <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a>
+            </a> --}}
         </div>
 
         <!-- Pengujian Card -->
@@ -210,11 +210,11 @@
                 </div>
             </div>
             <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            <a href="{{ route('admin.testing.index') }}"
+            {{-- <a href="{{ route('admin.testing.index') }}"
                class="inline-flex items-center text-sm font-medium text-emerald-600 hover:text-emerald-700">
                 Kelola pengujian
                 <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a>
+            </a> --}}
         </div>
 
         <!-- Kunjungan Card -->

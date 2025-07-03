@@ -13,69 +13,78 @@ class Peminjaman extends Model
 
     protected $table = 'peminjaman';
 
-    protected $fillable = [
-        'namaPeminjam',
-        'noHp',
-        'tujuanPeminjaman',
-        'tanggal_pinjam',
-        'tanggal_pengembalian',
-        'status',
-        'email',
-        'nim_nip',
-    ];
-
-    protected $casts = [
-        'tanggal_pinjam' => 'datetime',
-        'tanggal_pengembalian' => 'datetime',
-    ];
-
-    // Status constants
     const STATUS_PENDING = 'PENDING';
     const STATUS_PROCESSING = 'PROCESSING';
     const STATUS_COMPLETED = 'COMPLETED';
     const STATUS_CANCELLED = 'CANCELLED';
 
+    protected $fillable = [
+        'namaPeminjam',
+        'is_mahasiswa_usk',
+        'noHp',
+        'tujuanPeminjaman',
+        'tanggal_pinjam',
+        'tanggal_pengembalian',
+        'kondisi_pengembalian',
+        'status'
+    ];
+
+    protected $casts = [
+        'tanggal_pinjam' => 'datetime',
+        'tanggal_pengembalian' => 'datetime',
+        'is_mahasiswa_usk' => 'boolean'
+    ];
+
     /**
-     * Get all available statuses
+     * Relationship with PeminjamanItem
      */
-    public static function getStatuses()
+    public function items()
     {
-        return [
-            self::STATUS_PENDING => 'Menunggu Konfirmasi',
-            self::STATUS_PROCESSING => 'Sedang Dipinjam',
-            self::STATUS_COMPLETED => 'Selesai',
-            self::STATUS_CANCELLED => 'Dibatalkan'
-        ];
+        return $this->hasMany(PeminjamanItem::class, 'peminjamanId', 'id');
     }
 
     /**
-     * Get status badge class for UI
+     * Get total types of equipment borrowed
      */
-    public function getStatusBadgeClassAttribute()
+    public function getTotalTypesAttribute()
+    {
+        return $this->items()->count();
+    }
+
+    /**
+     * Get total quantity of all equipment borrowed
+     */
+    public function getTotalQuantityAttribute()
+    {
+        return $this->items()->sum('jumlah');
+    }
+
+    /**
+     * Get status name in Indonesian
+     */
+    public function getStatusNameAttribute()
     {
         return match($this->status) {
-            self::STATUS_PENDING => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            self::STATUS_PROCESSING => 'bg-blue-100 text-blue-800 border-blue-200',
-            self::STATUS_COMPLETED => 'bg-green-100 text-green-800 border-green-200',
-            self::STATUS_CANCELLED => 'bg-red-100 text-red-800 border-red-200',
-            default => 'bg-gray-100 text-gray-800 border-gray-200'
+            self::STATUS_PENDING => 'Menunggu Persetujuan',
+            self::STATUS_PROCESSING => 'Sedang Dipinjam',
+            self::STATUS_COMPLETED => 'Selesai',
+            self::STATUS_CANCELLED => 'Dibatalkan',
+            default => 'Unknown'
         };
     }
 
     /**
-     * Get formatted status name
+     * Get status color for UI
      */
-    public function getStatusNameAttribute()
+    public function getStatusColorAttribute()
     {
-        return self::getStatuses()[$this->status] ?? $this->status;
-    }
-
-    /**
-     * Get duration in days
-     */
-    public function getDurationDaysAttribute()
-    {
-        return $this->tanggal_pinjam->diffInDays($this->tanggal_pengembalian);
+        return match($this->status) {
+            self::STATUS_PENDING => 'yellow',
+            self::STATUS_PROCESSING => 'blue',
+            self::STATUS_COMPLETED => 'green',
+            self::STATUS_CANCELLED => 'red',
+            default => 'gray'
+        };
     }
 
     /**
@@ -83,100 +92,21 @@ class Peminjaman extends Model
      */
     public function getIsOverdueAttribute()
     {
-        if ($this->status !== self::STATUS_PROCESSING) {
-            return false;
+        if ($this->status === self::STATUS_PROCESSING) {
+            return Carbon::now()->greaterThan($this->tanggal_pengembalian);
         }
-
-        return $this->tanggal_pengembalian->isPast();
+        return false;
     }
 
     /**
-     * Get days until return or overdue days
+     * Get days until return (negative if overdue)
      */
     public function getDaysUntilReturnAttribute()
     {
-        if ($this->status !== self::STATUS_PROCESSING) {
-            return null;
+        if ($this->status === self::STATUS_PROCESSING) {
+            return Carbon::now()->diffInDays($this->tanggal_pengembalian, false);
         }
-
-        $now = Carbon::now();
-        if ($this->tanggal_pengembalian->isFuture()) {
-            return $now->diffInDays($this->tanggal_pengembalian);
-        } else {
-            return -$now->diffInDays($this->tanggal_pengembalian); // Negative for overdue
-        }
-    }
-
-    /**
-     * Get total quantity of all items
-     */
-    public function getTotalQuantityAttribute()
-    {
-        return $this->items->sum('jumlah');
-    }
-
-    /**
-     * Get total equipment types count
-     */
-    public function getTotalTypesAttribute()
-    {
-        return $this->items->count();
-    }
-
-    /**
-     * Scope untuk filter berdasarkan status
-     */
-    public function scopeWithStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Scope untuk filter berdasarkan tanggal
-     */
-    public function scopeForDateRange($query, $startDate, $endDate)
-    {
-        return $query->whereBetween('tanggal_pinjam', [$startDate, $endDate]);
-    }
-
-    /**
-     * Scope untuk peminjaman yang sedang aktif
-     */
-    public function scopeActive($query)
-    {
-        return $query->whereIn('status', [self::STATUS_PENDING, self::STATUS_PROCESSING]);
-    }
-
-    /**
-     * Scope untuk peminjaman yang terlambat
-     */
-    public function scopeOverdue($query)
-    {
-        return $query->where('status', self::STATUS_PROCESSING)
-                    ->where('tanggal_pengembalian', '<', Carbon::now());
-    }
-
-    /**
-     * Relationship dengan peminjaman items
-     */
-    public function items()
-    {
-        return $this->hasMany(PeminjamanItem::class, 'peminjamanId');
-    }
-
-    /**
-     * Get all alat through items relationship
-     */
-    public function alats()
-    {
-        return $this->hasManyThrough(
-            Alat::class,
-            PeminjamanItem::class,
-            'peminjamanId',
-            'id',
-            'id',
-            'alat_id'
-        );
+        return null;
     }
 
     /**
@@ -184,49 +114,303 @@ class Peminjaman extends Model
      */
     public function generateReferenceNumber()
     {
-        $prefix = match($this->total_types) {
-            1 => 'SLR', // Single Loan Request
-            default => 'BLR' // Bulk Loan Request
-        };
-
-        $date = $this->created_at->format('Ymd');
-        $sequence = str_pad($this->id ? substr($this->id, 0, 3) : '001', 3, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$date}-{$sequence}";
+        return 'PJM-' . $this->created_at->format('Ymd') . '-' . str_pad(substr($this->id, 0, 4), 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Check if equipment is available for the requested period
+     * Get borrower type (Mahasiswa USK or External)
      */
-    public static function isEquipmentAvailable($alatId, $startDate, $endDate, $quantity = 1, $excludePeminjamanId = null)
+    public function getBorrowerTypeAttribute()
     {
-        $alat = Alat::find($alatId);
-        if (!$alat || $alat->isBroken) {
+        return $this->is_mahasiswa_usk ? 'Mahasiswa USK' : 'Eksternal';
+    }
+
+    /**
+     * Get status icon for display
+     */
+    public function getStatusIcon()
+    {
+        return match($this->status) {
+            'PENDING' => 'clock',
+            'PROCESSING' => 'hand-holding',
+            'COMPLETED' => 'check-circle',
+            'CANCELLED' => 'times-circle',
+            default => 'question-circle'
+        };
+    }
+
+    /**
+     * Get borrower type badge class
+     */
+    public function getBorrowerTypeBadgeClass()
+    {
+        return $this->is_mahasiswa_usk ? 'usk-badge' : 'external-badge';
+    }
+
+    /**
+     * Get borrower type text
+     */
+    public function getBorrowerTypeText()
+    {
+        return $this->is_mahasiswa_usk ? 'Mahasiswa USK' : 'Eksternal';
+    }
+
+    /**
+     * Get priority level based on due date
+     */
+    public function getPriorityLevel()
+    {
+        if ($this->is_overdue) {
+            return 'high';
+        } elseif ($this->days_until_return <= 2 && $this->days_until_return > 0) {
+            return 'medium';
+        }
+        return 'low';
+    }
+
+    /**
+     * Get equipment summary text for display
+     */
+    public function getEquipmentSummaryText()
+    {
+        $summary = $this->items->map(function($item) {
+            return $item->alat->nama . ' (' . $item->jumlah . ' unit)';
+        })->take(3)->implode(', ');
+
+        if ($this->items->count() > 3) {
+            $summary .= ' +' . ($this->items->count() - 3) . ' lainnya';
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Check if loan can be approved
+     */
+    public function canBeApproved()
+    {
+        return $this->status === 'PENDING';
+    }
+
+    /**
+     * Check if loan can be completed
+     */
+    public function canBeCompleted()
+    {
+        return $this->status === 'PROCESSING';
+    }
+
+    /**
+     * Check if loan can be cancelled
+     */
+    public function canBeCancelled()
+    {
+        return in_array($this->status, ['PENDING', 'PROCESSING']);
+    }
+
+    /**
+     * Get formatted period text
+     */
+    public function getPeriodText()
+    {
+        return $this->tanggal_pinjam->format('d M Y') . ' - ' . $this->tanggal_pengembalian->format('d M Y');
+    }
+
+    /**
+     * Get status badge class for CSS styling
+     */
+    public function getStatusBadgeClass()
+    {
+        return 'status-' . strtolower($this->status);
+    }
+
+    /**
+     * Approve the loan request
+     */
+    public function approve()
+    {
+        if ($this->status === self::STATUS_PENDING) {
+            $this->status = self::STATUS_PROCESSING;
+            $this->save();
+
+            // Update stock for each item
+            foreach ($this->items as $item) {
+                $item->alat->pinjam($item->jumlah);
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Complete the loan (return items)
+     */
+    public function complete($itemConditions = [])
+    {
+        if ($this->status === self::STATUS_PROCESSING) {
+            $this->status = self::STATUS_COMPLETED;
+            $this->kondisi_pengembalian = json_encode($itemConditions);
+            $this->save();
+
+            // Update stock for each item
+            foreach ($this->items as $item) {
+                $kondisi = $itemConditions[$item->alat_id] ?? 'baik';
+                $item->alat->returnItem($item->jumlah, $kondisi);
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Cancel the loan
+     */
+    public function cancel($reason = null)
+    {
+        if (in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING])) {
+            $oldStatus = $this->status;
+            $this->status = self::STATUS_CANCELLED;
+            $this->save();
+
+            // If was processing, return stock
+            if ($oldStatus === self::STATUS_PROCESSING) {
+                foreach ($this->items as $item) {
+                    $item->alat->kembalikan($item->jumlah);
+                }
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Scope to filter by status
+     */
+    public function scopeByStatus($query, $status)
+    {
+        if ($status && $status !== 'all') {
+            return $query->where('status', $status);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope for filtering by borrower type
+     */
+    public function scopeByBorrowerType($query, $type)
+    {
+        if ($type === '1') {
+            return $query->where('is_mahasiswa_usk', true);
+        } elseif ($type === '0') {
+            return $query->where('is_mahasiswa_usk', false);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope for filtering overdue loans
+     */
+    public function scopeOverdue($query)
+    {
+        return $query->where('status', 'PROCESSING')
+                     ->where('tanggal_pengembalian', '<', now());
+    }
+
+    /**
+     * Scope for loans due soon (within 2 days)
+     */
+    public function scopeDueSoon($query)
+    {
+        return $query->where('status', 'PROCESSING')
+                     ->whereBetween('tanggal_pengembalian', [
+                         now(),
+                         now()->addDays(2)
+                     ]);
+    }
+
+    /**
+     * Scope to search peminjaman
+     */
+    public function scopeSearch($query, $search)
+    {
+        if ($search) {
+            return $query->where(function($q) use ($search) {
+                $q->where('namaPeminjam', 'like', '%' . $search . '%')
+                  ->orWhere('noHp', 'like', '%' . $search . '%')
+                  ->orWhere('tujuanPeminjaman', 'like', '%' . $search . '%');
+            });
+        }
+        return $query;
+    }
+
+    /**
+     * Check if equipment is available for the given period
+     */
+    public static function isEquipmentAvailable($equipmentId, $startDate, $endDate, $quantity = 1, $excludePeminjamanId = null)
+    {
+        $alat = Alat::find($equipmentId);
+        if (!$alat) {
             return false;
         }
 
-        // Check overlapping bookings
-        $overlappingBookings = self::where(function($query) use ($startDate, $endDate) {
-            $query->whereBetween('tanggal_pinjam', [$startDate, $endDate])
-                  ->orWhereBetween('tanggal_pengembalian', [$startDate, $endDate])
-                  ->orWhere(function($q) use ($startDate, $endDate) {
-                      $q->where('tanggal_pinjam', '<=', $startDate)
-                        ->where('tanggal_pengembalian', '>=', $endDate);
-                  });
-        })
-        ->whereIn('status', [self::STATUS_PENDING, self::STATUS_PROCESSING])
-        ->when($excludePeminjamanId, function($query) use ($excludePeminjamanId) {
-            $query->where('id', '!=', $excludePeminjamanId);
-        })
-        ->with(['items' => function($query) use ($alatId) {
-            $query->where('alat_id', $alatId);
-        }])
-        ->get();
+        // Check if there's enough stock available
+        if ($alat->jumlah_tersedia < $quantity) {
+            return false;
+        }
 
-        $bookedQuantity = $overlappingBookings->sum(function($peminjaman) {
-            return $peminjaman->items->sum('jumlah');
+        // Check for overlapping bookings in pending and processing status
+        $query = PeminjamanItem::where('alat_id', $equipmentId)
+            ->whereHas('peminjaman', function($q) use ($startDate, $endDate, $excludePeminjamanId) {
+                $q->whereIn('status', ['PENDING', 'PROCESSING']);
+
+                if ($excludePeminjamanId) {
+                    $q->where('id', '!=', $excludePeminjamanId);
+                }
+
+                $q->where(function($q2) use ($startDate, $endDate) {
+                    $q2->whereBetween('tanggal_pinjam', [$startDate, $endDate])
+                       ->orWhereBetween('tanggal_pengembalian', [$startDate, $endDate])
+                       ->orWhere(function($q3) use ($startDate, $endDate) {
+                           $q3->where('tanggal_pinjam', '<=', $startDate)
+                              ->where('tanggal_pengembalian', '>=', $endDate);
+                       });
+                });
+            });
+
+        $overlappingBookings = $query->sum('jumlah');
+        $availableForPeriod = $alat->stok - $overlappingBookings;
+
+        return $availableForPeriod >= $quantity;
+    }
+
+    /**
+     * Get equipment summary for display
+     */
+    public function getEquipmentSummaryAttribute()
+    {
+        return $this->items->map(function($item) {
+            return $item->alat->nama . ' (' . $item->jumlah . ' unit)';
+        })->implode(', ');
+    }
+
+    /**
+     * Boot method for model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When peminjaman is being deleted, make sure to clean up properly
+        static::deleting(function ($peminjaman) {
+            // If was processing, return stock
+            if ($peminjaman->status === self::STATUS_PROCESSING) {
+                foreach ($peminjaman->items as $item) {
+                    $item->alat->kembalikan($item->jumlah);
+                }
+            }
         });
-
-        return ($alat->stok - $bookedQuantity) >= $quantity;
     }
 }

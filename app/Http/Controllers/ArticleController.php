@@ -112,8 +112,7 @@ class ArticleController extends Controller
         if ($artikel->gambarUtama) {
             $url = $artikel->gambarUtama->url;
 
-            // Debug untuk melihat format URL yang disimpan
-            \Log::info('Original URL from DB: ' . $url);
+
 
             // Jika sudah URL lengkap (http/https), return as is
             if (str_starts_with($url, 'http')) {
@@ -128,11 +127,10 @@ class ArticleController extends Controller
             // Pastikan file benar-benar ada di storage
             if (Storage::disk('public')->exists($url)) {
                 $fullUrl = asset('storage/' . $url);
-                \Log::info('Generated URL: ' . $fullUrl);
                 return $fullUrl;
             }
 
-            \Log::warning('File not found in storage: ' . $url);
+
         }
 
         // Default image

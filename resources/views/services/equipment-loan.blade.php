@@ -289,11 +289,21 @@
 
                 <!-- Image -->
                 <div class="relative overflow-hidden h-48 bg-gradient-to-br from-gray-100 to-gray-200">
-                    <img src="{{ asset('images/equipment/' . ($equipment['image'] ?? 'default.jpg')) }}"
-                         alt="{{ $equipment['name'] }}"
-                         class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
-                         onerror="this.src='{{ asset('images/equipment/default.jpg') }}'">
-
+                    @if(!empty($equipment['image']) && $equipment['image'] !== 'default.jpg')
+                        {{-- Gunakan asset dengan storage path yang benar --}}
+                        <img src="{{ asset('storage/equipment/' . $equipment['image']) }}"
+                            alt="{{ $equipment['name'] }}"
+                            class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
+                            onerror="this.src='{{ asset('images/equipment/default.jpg') }}'">
+                    @else
+                        {{-- Default image jika tidak ada gambar --}}
+                        <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                            <div class="text-center text-gray-400">
+                                <i class="fas fa-image text-4xl mb-2"></i>
+                                <p class="text-sm">Tidak ada gambar</p>
+                            </div>
+                        </div>
+                    @endif
                     <!-- Status Badge -->
                     <div class="absolute top-4 right-4">
                         @if($equipment['status'] === 'available')
@@ -470,77 +480,129 @@
 
             <!-- Form -->
             <form id="bulkLoanForm" action="{{ route('equipment.request') }}" method="POST" class="space-y-6">
-                @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Personal Info -->
+    @csrf
+
+    <!-- Status Peminjam -->
+    <div class="grid grid-cols-1 gap-6">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">Status Peminjam *</label>
+            <div class="grid grid-cols-2 gap-4">
+                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors duration-200">
+                    <input type="radio" name="borrower_type" value="mahasiswa_usk" class="mr-3 text-blue-600" checked
+                           onchange="toggleBorrowerFields()">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap *</label>
-                        <input type="text" name="name" required value="{{ old('name') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="font-semibold text-gray-900">Mahasiswa USK</div>
+                        <div class="text-sm text-gray-600">Mahasiswa Universitas Syiah Kuala</div>
                     </div>
-
+                </label>
+                <label class="flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors duration-200">
+                    <input type="radio" name="borrower_type" value="eksternal" class="mr-3 text-blue-600"
+                           onchange="toggleBorrowerFields()">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">NIM/NIP *</label>
-                        <input type="text" name="student_id" required value="{{ old('student_id') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="font-semibold text-gray-900">Eksternal</div>
+                        <div class="text-sm text-gray-600">Mahasiswa luar USK / Umum</div>
                     </div>
+                </label>
+            </div>
+        </div>
+    </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
-                        <input type="email" name="email" required value="{{ old('email') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Personal Info -->
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap *</label>
+            <input type="text" name="name" required value="{{ old('name') }}"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon *</label>
-                        <input type="tel" name="phone" required value="{{ old('phone') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <span id="student-id-label">NIM *</span>
+            </label>
+            <input type="text" name="student_id" required value="{{ old('student_id') }}"
+                   id="student-id-input"
+                   placeholder="Masukkan NIM Anda"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <div id="student-id-help" class="text-xs text-gray-500 mt-1">
+                Format NIM USK: contoh 1908107010001
+            </div>
+        </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai *</label>
-                        <input type="date" name="start_date" required value="{{ old('start_date') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+            <input type="email" name="email" required value="{{ old('email') }}"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Selesai *</label>
-                        <input type="date" name="end_date" required value="{{ old('end_date') }}"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">No. Telepon *</label>
+            <input type="tel" name="phone" required value="{{ old('phone') }}"
+                   placeholder="Contoh: 081234567890"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Penggunaan *</label>
-                    <textarea name="purpose" rows="4" required
-                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              placeholder="Jelaskan tujuan dan rencana penggunaan alat-alat tersebut...">{{ old('purpose') }}</textarea>
-                </div>
+        <!-- Instansi untuk Eksternal -->
+        <div id="instansi-field" class="hidden md:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Instansi/Universitas *</label>
+            <input type="text" name="instansi" value="{{ old('instansi') }}"
+                   placeholder="Nama instansi atau universitas asal"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <!-- Hidden fields for selected equipment data -->
-                <input type="hidden" name="equipment_ids" id="equipment-ids-input">
-                <input type="hidden" name="equipment_quantities" id="equipment-quantities-input">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Mulai *</label>
+            <input type="date" name="start_date" required value="{{ old('start_date') }}"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
 
-                <!-- Terms -->
-                <div class="flex items-start space-x-3">
-                    <input type="checkbox" id="bulk-terms" required class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                    <label for="bulk-terms" class="text-sm text-gray-600">
-                        Saya menyetujui <a href="#" class="text-blue-600 hover:underline">syarat dan ketentuan</a> peminjaman alat laboratorium dan akan mengikuti briefing yang diberikan.
-                    </label>
-                </div>
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Selesai *</label>
+            <input type="date" name="end_date" required value="{{ old('end_date') }}"
+                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+    </div>
 
-                <!-- Submit -->
-                <div class="flex space-x-4">
-                    <button type="button" onclick="closeBulkLoanModal()"
-                            class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors duration-200">
-                        Batal
-                    </button>
-                    <button type="submit" id="submit-btn"
-                            class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200">
-                        Kirim Permohonan
-                    </button>
-                </div>
-            </form>
+    <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Penggunaan *</label>
+        <textarea name="purpose" rows="4" required
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Jelaskan tujuan dan rencana penggunaan alat-alat tersebut...">{{ old('purpose') }}</textarea>
+    </div>
+
+    <!-- Persyaratan Tambahan -->
+    <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+        <h4 class="font-semibold text-blue-900 mb-3">
+            <i class="fas fa-clipboard-list mr-2"></i>Persyaratan Dokumen
+        </h4>
+        <div id="requirements-list">
+            <!-- Will be populated by JavaScript based on borrower type -->
+        </div>
+    </div>
+
+    <!-- Hidden fields for selected equipment data -->
+    <input type="hidden" name="equipment_ids" id="equipment-ids-input">
+    <input type="hidden" name="equipment_quantities" id="equipment-quantities-input">
+
+    <!-- Terms -->
+    <div class="flex items-start space-x-3">
+        <input type="checkbox" id="bulk-terms" required class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+        <label for="bulk-terms" class="text-sm text-gray-600">
+            Saya menyetujui <a href="#" class="text-blue-600 hover:underline">syarat dan ketentuan</a> peminjaman alat laboratorium, akan mengikuti briefing yang diberikan, dan bertanggung jawab atas alat yang dipinjam.
+        </label>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex space-x-4">
+        <button type="button" onclick="closeBulkLoanModal()"
+                class="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors duration-200">
+            Batal
+        </button>
+        <button type="submit" id="submit-btn"
+                class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors duration-200">
+            Kirim Permohonan
+        </button>
+    </div>
+</form>
         </div>
     </div>
 </div>
@@ -1060,6 +1122,55 @@ function removeFromSelection(equipmentId) {
         openBulkLoanModal();
     }
 }
+
+function toggleBorrowerFields() {
+    const borrowerType = document.querySelector('input[name="borrower_type"]:checked').value;
+    const studentIdLabel = document.getElementById('student-id-label');
+    const studentIdInput = document.getElementById('student-id-input');
+    const studentIdHelp = document.getElementById('student-id-help');
+    const instansiField = document.getElementById('instansi-field');
+    const requirementsList = document.getElementById('requirements-list');
+
+    if (borrowerType === 'mahasiswa_usk') {
+        // Mahasiswa USK
+        studentIdLabel.textContent = 'NIM *';
+        studentIdInput.placeholder = 'Masukkan NIM Anda';
+        studentIdInput.setAttribute('pattern', '[0-9]{13}');
+        studentIdHelp.textContent = 'Format NIM USK: contoh 1908107010001';
+        instansiField.classList.add('hidden');
+        instansiField.querySelector('input').removeAttribute('required');
+
+        requirementsList.innerHTML = `
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Kartu Mahasiswa USK</li>
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Surat pengantar dari dosen/pembimbing</li>
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Mengikuti briefing keselamatan</li>
+            </ul>
+        `;
+    } else {
+        // Eksternal
+        studentIdLabel.textContent = 'NIM/NIP *';
+        studentIdInput.placeholder = 'Masukkan NIM atau NIP Anda';
+        studentIdInput.removeAttribute('pattern');
+        studentIdHelp.textContent = 'Masukkan NIM/NIP dari instansi asal';
+        instansiField.classList.remove('hidden');
+        instansiField.querySelector('input').setAttribute('required', 'required');
+
+        requirementsList.innerHTML = `
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Kartu identitas/mahasiswa</li>
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Surat pengantar resmi dari instansi</li>
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Surat permohonan ke laboratorium</li>
+                <li class="flex items-center"><i class="fas fa-check mr-2"></i>Mengikuti briefing keselamatan</li>
+            </ul>
+        `;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleBorrowerFields();
+});
 
 // Handle form submission
 document.getElementById('bulkLoanForm').addEventListener('submit', function(e) {

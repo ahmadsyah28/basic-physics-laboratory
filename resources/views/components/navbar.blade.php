@@ -41,9 +41,7 @@
                                 <a href="{{ route('equipment.loan') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Peminjaman Alat
                                 </a>
-                                {{-- <a href="{{ route('testing.services') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-                                    Layanan Pengujian
-                                </a> --}}
+                                
                                 <a href="{{ route('visit.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Jadwalkan Kunjungan
                                 </a>

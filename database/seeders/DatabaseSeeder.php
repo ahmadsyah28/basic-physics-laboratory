@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             StaffSeeder::class,
             ArtikelSeeder::class,
             JenisPengujianSeeder::class,
+            KategoriAlatSeeder::class,
         ]);
     }
 }

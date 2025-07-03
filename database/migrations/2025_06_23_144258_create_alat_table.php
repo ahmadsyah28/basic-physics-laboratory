@@ -14,23 +14,28 @@ return new class extends Migration
         Schema::create('alat', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama');
+            $table->string('kode')->unique();
             $table->text('deskripsi');
+            $table->string('image_url');
+            $table->integer('jumlah_tersedia');
+            $table->integer('jumlah_dipinjam');
+            $table->integer('jumlah_rusak');
+            $table->string('nama_kategori');
             $table->integer('stok');
-            $table->boolean('isBroken')->default(false);
+            $table->double('harga')->nullable();
             $table->timestamps();
 
-            // Additional columns for equipment management
-            $table->string('model')->nullable();
-            $table->string('kategori')->nullable();
-            $table->string('gambar')->nullable();
-            $table->json('spesifikasi')->nullable();
-            $table->json('persyaratan')->nullable();
-            $table->string('durasi_pinjam')->nullable();
-            $table->string('icon')->nullable();
+            // Index untuk performa query (dibuat dulu sebelum foreign key)
+            $table->index('nama_kategori');
+            $table->index('kode');
+        });
 
-            // Indexes
-            $table->index('kategori');
-            $table->index('isBroken');
+        // Tambahkan foreign key constraint setelah tabel dibuat
+        Schema::table('alat', function (Blueprint $table) {
+            $table->foreign('nama_kategori')
+                  ->references('nama_kategori')
+                  ->on('kategori_alat')
+                  ->onDelete('restrict'); // Mencegah penghapusan kategori yang masih digunakan
         });
     }
 

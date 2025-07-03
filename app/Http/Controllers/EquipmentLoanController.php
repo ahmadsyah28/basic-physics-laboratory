@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alat;
+use App\Models\KategoriAlat;
 use App\Models\Peminjaman;
 use App\Models\PeminjamanItem;
 use Illuminate\Http\Request;
@@ -19,64 +20,46 @@ class EquipmentLoanController extends Controller
         $kategori = request('kategori', 'all');
         $status = request('status', 'all');
 
-        $equipments = Alat::search($search)
-                         ->byKategori($kategori)
-                         ->byStatus($status)
+        $equipments = Alat::with('kategoriAlat')
+                         ->search($search)
+                         ->when($kategori !== 'all', function($query) use ($kategori) {
+                             return $query->byKategori($kategori);
+                         })
+                         ->when($status !== 'all', function($query) use ($status) {
+                             if ($status === 'available') {
+                                 return $query->where('jumlah_tersedia', '>', 0);
+                             } elseif ($status === 'maintenance') {
+                                 return $query->where('jumlah_rusak', '>', 0);
+                             } elseif ($status === 'unavailable') {
+                                 return $query->where('jumlah_tersedia', '=', 0)
+                                             ->where('jumlah_rusak', '=', 0);
+                             }
+                         })
                          ->orderBy('nama')
                          ->get()
                          ->map(function($alat) {
-                             return [
-                                 'id' => $alat->id,
-                                 'name' => $alat->nama,
-                                 'model' => $alat->model,
-                                 'image' => $alat->gambar,
-                                 'category' => $alat->kategori,
-                                 'status' => $alat->status,
-                                 'quantity_total' => $alat->stok,
-                                 'quantity_available' => $alat->stok_tersedia,
-                                 'description' => $alat->deskripsi,
-                                 'specifications' => $alat->spesifikasi ?? [],
-                                 'requirements' => $alat->persyaratan ?? [],
-                                 'loan_duration' => $alat->durasi_pinjam,
-                                 'icon' => $alat->icon,
-                             ];
+                             return $this->formatEquipmentForView($alat);
                          });
 
-        $categories = [
-            'all' => 'Semua Kategori',
-            'Elektronika' => 'Elektronika',
-            'Pengukuran' => 'Pengukuran',
-            'Generator' => 'Generator',
-            'Power' => 'Power Supply',
-            'Analisis' => 'Analisis'
-        ];
+        // Get categories from database
+        $categories = ['all' => 'Semua Kategori'];
+        $dbCategories = KategoriAlat::orderBy('nama_kategori')->get();
+        foreach ($dbCategories as $cat) {
+            $categories[$cat->nama_kategori] = $cat->nama_kategori;
+        }
 
         return view('services.equipment-loan', compact('equipments', 'categories'));
     }
 
     public function show($id)
     {
-        $alat = Alat::find($id);
+        $alat = Alat::with('kategoriAlat')->find($id);
 
         if (!$alat) {
             abort(404, 'Alat tidak ditemukan');
         }
 
-        $equipment = [
-            'id' => $alat->id,
-            'name' => $alat->nama,
-            'model' => $alat->model,
-            'image' => $alat->gambar,
-            'category' => $alat->kategori,
-            'status' => $alat->status,
-            'quantity_total' => $alat->stok,
-            'quantity_available' => $alat->stok_tersedia,
-            'description' => $alat->deskripsi,
-            'specifications' => $alat->spesifikasi ?? [],
-            'requirements' => $alat->persyaratan ?? [],
-            'loan_duration' => $alat->durasi_pinjam,
-            'icon' => $alat->icon,
-        ];
+        $equipment = $this->formatEquipmentForView($alat);
 
         return view('services.equipment-detail', compact('equipment'));
     }
@@ -136,16 +119,9 @@ class EquipmentLoanController extends Controller
                 $requestedQuantity = $equipmentQuantities[$alatId] ?? 1;
                 $totalUnits += $requestedQuantity;
 
-                // Check availability for the requested period
-                $isAvailable = Peminjaman::isEquipmentAvailable(
-                    $alatId,
-                    $request->start_date,
-                    $request->end_date,
-                    $requestedQuantity
-                );
-
-                if (!$isAvailable) {
-                    $unavailableEquipment[] = "{$alat->nama}: Diminta {$requestedQuantity} unit, tersedia {$alat->stok_tersedia} unit untuk periode tersebut";
+                // Check if equipment can be borrowed
+                if (!$alat->canBeBorrowed($requestedQuantity)) {
+                    $unavailableEquipment[] = "{$alat->nama}: Diminta {$requestedQuantity} unit, tersedia {$alat->jumlah_tersedia} unit";
                 } else {
                     $equipmentDetails[] = [
                         'alat' => $alat,
@@ -165,12 +141,11 @@ class EquipmentLoanController extends Controller
             $peminjaman = Peminjaman::create([
                 'namaPeminjam' => $request->name,
                 'noHp' => $request->phone,
-                'email' => $request->email,
-                'nim_nip' => $request->student_id,
                 'tujuanPeminjaman' => $request->purpose,
                 'tanggal_pinjam' => $request->start_date,
                 'tanggal_pengembalian' => $request->end_date,
-                'status' => Peminjaman::STATUS_PENDING
+                'status' => Peminjaman::STATUS_PENDING,
+                'is_mahasiswa_usk' => $this->isMahasiswaUSK($request->student_id)
             ]);
 
             // Create peminjaman items
@@ -243,17 +218,12 @@ class EquipmentLoanController extends Controller
                 $quantity = $request->equipment_quantities[$index] ?? 1;
 
                 if ($alat) {
-                    $isAvailable = Peminjaman::isEquipmentAvailable(
-                        $alatId,
-                        $request->start_date,
-                        $request->end_date,
-                        $quantity
-                    );
+                    $isAvailable = $alat->canBeBorrowed($quantity);
 
                     $availability[$alatId] = [
                         'available' => $isAvailable,
                         'requested_quantity' => $quantity,
-                        'stock_available' => $alat->stok_tersedia,
+                        'stock_available' => $alat->jumlah_tersedia,
                         'equipment_name' => $alat->nama
                     ];
                 }
@@ -291,8 +261,7 @@ class EquipmentLoanController extends Controller
             ->when($search, function($query) use ($search) {
                 $query->where(function($q) use ($search) {
                     $q->where('namaPeminjam', 'like', '%' . $search . '%')
-                      ->orWhere('nim_nip', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%');
+                      ->orWhere('noHp', 'like', '%' . $search . '%');
                 });
             })
             ->orderBy('created_at', 'desc')
@@ -305,7 +274,7 @@ class EquipmentLoanController extends Controller
                     'id' => $peminjaman->id,
                     'reference_number' => $peminjaman->generateReferenceNumber(),
                     'borrower_name' => $peminjaman->namaPeminjam,
-                    'student_id' => $peminjaman->nim_nip,
+                    'phone' => $peminjaman->noHp,
                     'equipment_count' => $peminjaman->total_types,
                     'total_units' => $peminjaman->total_quantity,
                     'equipment_list' => $peminjaman->items->map(function($item) {
@@ -329,5 +298,95 @@ class EquipmentLoanController extends Controller
                 'total' => $peminjamans->total()
             ]
         ]);
+    }
+
+    // =====================================
+    // PRIVATE METHODS - TANPA HELPER
+    // =====================================
+
+    /**
+     * Format equipment data for view
+     */
+    private function formatEquipmentForView($alat)
+    {
+        // Determine status
+        $status = 'available';
+        if ($alat->jumlah_rusak > 0) {
+            $status = 'maintenance';
+        } elseif ($alat->jumlah_tersedia == 0) {
+            $status = 'unavailable';
+        }
+
+        return [
+            'id' => $alat->id,
+            'name' => $alat->nama,
+            'model' => $alat->kode,
+            'image' => $alat->image_url ? basename($alat->image_url) : 'default.jpg',
+            'category' => $alat->nama_kategori,
+            'status' => $status,
+            'quantity_total' => $alat->stok,
+            'quantity_available' => $alat->jumlah_tersedia,
+            'quantity_borrowed' => $alat->jumlah_dipinjam,
+            'quantity_damaged' => $alat->jumlah_rusak,
+            'description' => $alat->deskripsi,
+            'specifications' => $this->extractSpecifications($alat->deskripsi),
+            'loan_duration' => '1-7 hari',
+            'icon' => $this->getCategoryIcon($alat->nama_kategori),
+            'price' => $alat->harga,
+        ];
+    }
+
+    /**
+     * Extract specifications from description
+     */
+    private function extractSpecifications($description)
+    {
+        $specs = [];
+
+        if (strpos($description, 'Spesifikasi:') !== false) {
+            $parts = explode('Spesifikasi:', $description);
+            if (count($parts) > 1) {
+                $specText = trim($parts[1]);
+                $specs = array_map('trim', explode(',', $specText));
+                $specs = array_filter($specs);
+            }
+        }
+
+        return $specs;
+    }
+
+    /**
+     * Get category icon
+     */
+    private function getCategoryIcon($category)
+    {
+        $icons = [
+            'Elektronika' => 'fas fa-microchip',
+            'Pengukuran' => 'fas fa-ruler',
+            'Generator' => 'fas fa-bolt',
+            'Power' => 'fas fa-battery-full',
+            'Analisis' => 'fas fa-chart-line',
+            'Optik' => 'fas fa-eye',
+            'Mekanik' => 'fas fa-cog',
+            'Thermal' => 'fas fa-thermometer-half'
+        ];
+
+        return $icons[$category] ?? 'fas fa-cog';
+    }
+
+    /**
+     * Determine if student ID belongs to USK student
+     */
+    private function isMahasiswaUSK($studentId)
+    {
+        if (preg_match('/^(1[0-9]{9}|2[0-9]{9})$/', $studentId)) {
+            return true;
+        }
+
+        if (preg_match('/^[0-9]{10}$/', $studentId)) {
+            return true;
+        }
+
+        return false;
     }
 }

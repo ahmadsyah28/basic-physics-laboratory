@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - Admin Panel Laboratorium Fisika Dasar</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -66,7 +67,7 @@
 
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="bg-blue-900 text-white w-64 sidebar">
+        <aside class="bg-blue-900 text-white w-64 sidebar sticky top-0 h-screen">
             <nav class="p-4">
                 <ul class="space-y-1">
                     <li>
@@ -88,23 +89,11 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.equipment-loan.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.equipment-loan.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.peminjaman.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.peminjaman.*') ? 'active' : '' }}">
                             <i class="fas fa-exchange-alt mr-3 w-5"></i>
                             <span>Peminjaman Alat</span>
                         </a>
                     </li>
-                    {{-- <li>
-                        <a href="{{ route('admin.testing-types.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.testing-types.*') ? 'active' : '' }}">
-                            <i class="fas fa-vial mr-3 w-5"></i>
-                            <span>Jenis Pengujian</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('admin.testing.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.testing.*') ? 'active' : '' }}">
-                            <i class="fas fa-flask mr-3 w-5"></i>
-                            <span>Kelola Pengujian</span>
-                        </a>
-                    </li> --}}
                     <li>
                         <a href="{{ route('admin.visits.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visits.*') && !request()->routeIs('admin.visits.calendar') ? 'active' : '' }}">
                             <i class="fas fa-calendar-check mr-3 w-5"></i>

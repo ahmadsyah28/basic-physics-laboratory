@@ -11,12 +11,13 @@ use App\Http\Controllers\VisitSchedulingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminStaffController;
-use App\Http\Controllers\Admin\AdminEquipmentLoanController;
-use App\Http\Controllers\Admin\AdminTestingServicesController;
 use App\Http\Controllers\Admin\AdminVisitController;
 use App\Http\Controllers\Admin\AdminArticleController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVisiMisiController;
+use App\Http\Controllers\Admin\AdminEquipmentController;
+use App\Http\Controllers\Admin\AdminPeminjamanController;
+
 /*
 |--------------------------------------------------------------------------
 | Main Routes
@@ -27,6 +28,7 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/equipment', [HomeController::class, 'equipment'])->name('equipment');
 Route::get('/services', [HomeController::class, 'services'])->name('services');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+
 /*
 |--------------------------------------------------------------------------
 | Staff & Facilities Routes
@@ -34,6 +36,7 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 */
 Route::get('/staff', [StaffController::class, 'index'])->name('staff');
 Route::get('/facilities', [FacilitiesController::class, 'index'])->name('facilities');
+
 /*
 |--------------------------------------------------------------------------
 | Articles & Gallery Routes (Simple Names)
@@ -42,6 +45,7 @@ Route::get('/facilities', [FacilitiesController::class, 'index'])->name('facilit
 // Articles
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles.show')->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
 /*
 |--------------------------------------------------------------------------
 | Services Routes
@@ -55,13 +59,7 @@ Route::prefix('services/equipment-loan')->name('equipment.')->group(function () 
     Route::get('/availability/check', [EquipmentLoanController::class, 'checkAvailability'])->name('check-availability');
     Route::get('/history', [EquipmentLoanController::class, 'getLoanHistory'])->name('history');
 });
-// Services - Testing Services
-// Route::prefix('services/testing')->name('testing.')->group(function () {
-//     Route::get('/', [TestingServicesController::class, 'index'])->name('services');
-//     Route::get('/{id}', [TestingServicesController::class, 'show'])->name('detail');
-//     Route::post('/request', [TestingServicesController::class, 'requestTest'])->name('request');
-//     Route::get('/schedule-availability', [TestingServicesController::class, 'getScheduleAvailability'])->name('schedule-availability');
-// });
+
 // Services - Visit Scheduling
 Route::prefix('services/visit-scheduling')->name('visit.')->group(function () {
     Route::get('/', [VisitSchedulingController::class, 'index'])->name('index');
@@ -91,43 +89,17 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
 
     // Staff Management
     Route::resource('staff', AdminStaffController::class);
-    // Di dalam group admin
     Route::get('/staff/{staff}/edit', [AdminStaffController::class, 'edit'])->name('staff.edit');
 
-    // Equipment Management
     Route::prefix('equipment')->name('equipment.')->group(function () {
-        Route::get('/', [AdminEquipmentLoanController::class, 'equipmentIndex'])->name('index');
-        Route::get('/create', [AdminEquipmentLoanController::class, 'equipmentCreate'])->name('create');
-        Route::post('/', [AdminEquipmentLoanController::class, 'equipmentStore'])->name('store');
-        Route::get('/{alat}/edit', [AdminEquipmentLoanController::class, 'equipmentEdit'])->name('edit');
-        Route::put('/{alat}', [AdminEquipmentLoanController::class, 'equipmentUpdate'])->name('update');
-        Route::delete('/{alat}', [AdminEquipmentLoanController::class, 'equipmentDestroy'])->name('destroy');
-    });
-
-    // Equipment Loan Management
-    Route::prefix('equipment-loan')->name('equipment-loan.')->group(function () {
-        Route::get('/', [AdminEquipmentLoanController::class, 'index'])->name('index');
-        Route::get('/{peminjaman}', [AdminEquipmentLoanController::class, 'show'])->name('show');
-        Route::put('/{peminjaman}/status', [AdminEquipmentLoanController::class, 'updateStatus'])->name('update-status');
-    });
-
-    // Testing Types Management
-    // Route::prefix('testing-types')->name('testing-types.')->group(function () {
-    //     Route::get('/', [AdminTestingServicesController::class, 'testingTypesIndex'])->name('index');
-    //     Route::get('/create', [AdminTestingServicesController::class, 'testingTypesCreate'])->name('create');
-    //     Route::post('/', [AdminTestingServicesController::class, 'testingTypesStore'])->name('store');
-    //     Route::get('/{jenisPengujian}/edit', [AdminTestingServicesController::class, 'testingTypesEdit'])->name('edit');
-    //     Route::put('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesUpdate'])->name('update');
-    //     Route::delete('/{jenisPengujian}', [AdminTestingServicesController::class, 'testingTypesDestroy'])->name('destroy');
-    // });
-
-    // Testing Services Management
-    // Route::prefix('testing')->name('testing.')->group(function () {
-    //     Route::get('/', [AdminTestingServicesController::class, 'index'])->name('index');
-    //     Route::get('/{pengujian}', [AdminTestingServicesController::class, 'show'])->name('show');
-    //     Route::put('/{pengujian}/status', [AdminTestingServicesController::class, 'updateStatus'])->name('update-status');
-    //     Route::post('/{pengujian}/upload-results', [AdminTestingServicesController::class, 'uploadResults'])->name('upload-results');
-    // });
+    Route::get('/', [AdminEquipmentController::class, 'index'])->name('index');
+    Route::get('/create', [AdminEquipmentController::class, 'create'])->name('create');
+    Route::post('/', [AdminEquipmentController::class, 'store'])->name('store');
+    Route::get('/{equipment}', [AdminEquipmentController::class, 'show'])->name('show');
+    Route::get('/{equipment}/edit', [AdminEquipmentController::class, 'edit'])->name('edit');
+    Route::put('/{equipment}', [AdminEquipmentController::class, 'update'])->name('update');
+    Route::delete('/{equipment}', [AdminEquipmentController::class, 'destroy'])->name('destroy');
+});
 
     // Visit Scheduling Management
     Route::prefix('visits')->name('visits.')->group(function () {
@@ -143,6 +115,15 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
         Route::get('/calendar/data', [AdminVisitController::class, 'getCalendarData'])->name('calendar.data');
     });
 
+    Route::prefix('peminjaman')->name('peminjaman.')->group(function () {
+    Route::get('/', [AdminPeminjamanController::class, 'index'])->name('index');
+    Route::get('/{peminjaman}', [AdminPeminjamanController::class, 'show'])->name('show');
+    Route::put('/{peminjaman}/status', [AdminPeminjamanController::class, 'updateStatus'])->name('update-status');
+    Route::delete('/{peminjaman}', [AdminPeminjamanController::class, 'destroy'])->name('destroy');
+    Route::get('/export/csv', [AdminPeminjamanController::class, 'export'])->name('export');
+    Route::post('/bulk-update', [AdminPeminjamanController::class, 'bulkUpdateStatus'])->name('bulk-update');
+    Route::get('/dashboard/data', [AdminPeminjamanController::class, 'getDashboardData'])->name('dashboard-data');
+});
     // Article Management
     Route::resource('articles', AdminArticleController::class);
     Route::delete('/articles/image/{gambar}', [AdminArticleController::class, 'destroyImage'])->name('articles.image.destroy');

@@ -82,7 +82,7 @@
                         <img src="{{ $articles->first()['image'] }}"
                              alt="{{ $articles->first()['title'] }}"
                              class="w-full h-64 lg:h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                             onerror="this.src='{{ asset('images/article/default.jpg') }}'">
+                             onerror="this.src='{{ asset('storage/article/default.jpg') }}'">
                     </div>
                     <div class="lg:w-1/2 p-8 lg:p-12">
                         <div class="flex items-center mb-4">
@@ -128,7 +128,7 @@
                     <img src="{{ $article['image'] }}"
                          alt="{{ $article['title'] }}"
                          class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-700"
-                         onerror="this.src='{{ asset('images/article/default.jpg') }}'">
+                         onerror="this.src='{{ asset('storage/article/default.jpg') }}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div class="absolute top-4 left-4">
                         <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
@@ -162,13 +162,28 @@
             @endforeach
         </div>
 
+        <!-- No Articles Message -->
+        @if($articles->count() == 0)
+        <div class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <img src="{{ asset('storage/article/default.jpg') }}"
+                     alt="No articles"
+                     class="w-32 h-32 mx-auto mb-6 rounded-lg opacity-50">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Artikel</h3>
+                <p class="text-gray-600">Artikel akan segera ditambahkan. Silakan kembali lagi nanti.</p>
+            </div>
+        </div>
+        @endif
+
         <!-- Load More Button -->
+        @if($articles->count() > 6)
         <div class="text-center mt-16">
             <button class="load-more-btn inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-full hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-blue-500/25">
                 <i class="fas fa-plus mr-2"></i>
                 Muat Artikel Lainnya
             </button>
         </div>
+        @endif
     </div>
 </section>
 
@@ -385,6 +400,13 @@
 #article-search:focus {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
+
+/* Loading state */
+.load-more-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
 </style>
 
 <script>
@@ -482,7 +504,8 @@ document.addEventListener('DOMContentLoaded', function() {
         articleCards.forEach(card => {
             const title = card.querySelector('h3').textContent.toLowerCase();
             const excerpt = card.querySelector('p').textContent.toLowerCase();
-            const author = card.querySelector('.fa-user').parentElement.textContent.toLowerCase();
+            const authorElement = card.querySelector('.fa-user').parentElement;
+            const author = authorElement ? authorElement.textContent.toLowerCase() : '';
 
             if (query === '' || title.includes(query) || excerpt.includes(query) || author.includes(query)) {
                 card.classList.remove('hidden');
@@ -496,6 +519,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 300);
             }
         });
+
+        // Show/hide "no results" message
+        const visibleCards = Array.from(articleCards).filter(card => !card.classList.contains('hidden'));
+        const noResultsDiv = document.getElementById('no-search-results');
+
+        if (query !== '' && visibleCards.length === 0) {
+            if (!noResultsDiv) {
+                const gridContainer = document.getElementById('articles-grid');
+                const noResults = document.createElement('div');
+                noResults.id = 'no-search-results';
+                noResults.className = 'col-span-full text-center py-12';
+                noResults.innerHTML = `
+                    <div class="max-w-md mx-auto">
+                        <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Artikel tidak ditemukan</h3>
+                        <p class="text-gray-600">Coba kata kunci lain atau hapus filter pencarian.</p>
+                    </div>
+                `;
+                gridContainer.appendChild(noResults);
+            }
+        } else if (noResultsDiv) {
+            noResultsDiv.remove();
+        }
     }
 
     // Load more functionality
@@ -510,18 +556,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.innerHTML = '<i class="fas fa-plus mr-2"></i>Muat Artikel Lainnya';
                 this.disabled = false;
                 // Di sini bisa ditambahkan logic untuk load artikel dari server
-            }, 1000);
+                console.log('Load more articles functionality can be implemented here');
+            }, 1500);
         });
     }
 
     // ===== PARALLAX EFFECT =====
-    window.addEventListener('scroll', () => {
+    let ticking = false;
+
+    function updateParallax() {
         const scrolled = window.pageYOffset;
         const parallax = document.querySelector('.articles-molecules-container');
         if (parallax) {
             const speed = scrolled * 0.3;
             parallax.style.transform = `translateY(${speed}px)`;
         }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+        }
+    });
+
+    // ===== IMAGE ERROR HANDLING =====
+    const images = document.querySelectorAll('img[src*="storage/article"]');
+    images.forEach(img => {
+        img.addEventListener('error', function() {
+            if (!this.src.includes('default.jpg')) {
+                this.src = '{{ asset("storage/article/default.jpg") }}';
+            }
+        });
     });
 });
 </script>

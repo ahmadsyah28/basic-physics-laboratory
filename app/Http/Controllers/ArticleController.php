@@ -1,8 +1,4 @@
 <?php
-// ========================================
-// SOLUSI 2: PERBAIKI CONTROLLER ARTIKEL
-// ========================================
-
 // app/Http/Controllers/ArticleController.php
 
 namespace App\Http\Controllers;
@@ -11,12 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Artikel;
 use App\Models\Gambar;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
     public function index()
     {
-        // Ambil semua artikel dengan gambar utama, urutkan berdasarkan tanggal terbaru
         $articles = Artikel::with(['gambarUtama'])
                            ->orderBy('tanggal_acara', 'desc')
                            ->get()
@@ -28,7 +24,7 @@ class ArticleController extends Controller
                                    'content' => $artikel->deskripsi,
                                    'author' => $artikel->penulis ?? 'Admin',
                                    'date' => $artikel->tanggal_acara->format('Y-m-d'),
-                                   'image' => $this->getFullImageUrl($artikel), // FIXED: Konversi ke URL lengkap
+                                   'image' => $this->getCorrectImageUrl($artikel),
                                    'slug' => Str::slug($artikel->nama_acara),
                                    'featured' => $this->isFeatured($artikel)
                                ];
@@ -39,20 +35,12 @@ class ArticleController extends Controller
 
     public function show($id)
     {
-        // Cari artikel berdasarkan ID dengan eager loading gambar
         $artikel = Artikel::with(['gambar', 'gambarUtama'])->find($id);
-
-        if (!$artikel) {
-            $artikel = Artikel::with(['gambar', 'gambarUtama'])
-                             ->where('nama_acara', 'LIKE', '%' . str_replace('-', ' ', $id) . '%')
-                             ->first();
-        }
 
         if (!$artikel) {
             abort(404, 'Artikel tidak ditemukan');
         }
 
-        // Format data artikel untuk view
         $article = [
             'id' => $artikel->id,
             'title' => $artikel->nama_acara,
@@ -60,49 +48,17 @@ class ArticleController extends Controller
             'content' => $this->formatContent($artikel->deskripsi),
             'author' => $artikel->penulis ?? 'Admin',
             'date' => $artikel->tanggal_acara->format('Y-m-d'),
-            'image' => $this->getFullImageUrl($artikel), // FIXED: Konversi ke URL lengkap
+            'image' => $this->getCorrectImageUrl($artikel),
             'slug' => Str::slug($artikel->nama_acara),
             'featured' => $this->isFeatured($artikel),
             'gallery' => $artikel->gambar->map(function($gambar) {
-                return $this->getGambarFullUrl($gambar);
+                return $this->getCorrectGambarUrl($gambar);
             })
         ];
 
         return view('articles.show', compact('article'));
     }
 
-    // FIXED: Method yang benar untuk konversi ke asset URL
-    private function getFullImageUrl($artikel)
-    {
-        if ($artikel->gambarUtama) {
-            $url = $artikel->gambarUtama->url; // 'article/article-2.jpg'
-
-            // Jika sudah URL lengkap (dimulai dengan http), return as is
-            if (str_starts_with($url, 'http')) {
-                return $url;
-            }
-
-            // Konversi ke asset URL lengkap
-            return asset('images/' . $url); // asset('images/article/article-2.jpg')
-        }
-
-        // Return default image URL
-        return asset('images/article/default.jpg');
-    }
-
-    // Helper method untuk gallery images
-    private function getGambarFullUrl($gambar)
-    {
-        $url = $gambar->url;
-
-        if (str_starts_with($url, 'http')) {
-            return $url;
-        }
-
-        return asset('images/' . $url);
-    }
-
-    // Method untuk mendapatkan artikel unggulan (untuk beranda)
     public function getFeaturedArticles($limit = 3)
     {
         $articles = Artikel::with(['gambarUtama'])
@@ -113,10 +69,10 @@ class ArticleController extends Controller
                                return [
                                    'id' => $artikel->id,
                                    'title' => $artikel->nama_acara,
-                                   'excerpt' => Str::limit($artikel->deskripsi, 150),
+                                   'excerpt' => Str::limit($artikel->deskripsi, 120),
                                    'author' => $artikel->penulis ?? 'Admin',
                                    'date' => $artikel->tanggal_acara->format('Y-m-d'),
-                                   'image' => $this->getFullImageUrl($artikel), // FIXED
+                                   'image' => $this->getCorrectImageUrl($artikel),
                                    'slug' => Str::slug($artikel->nama_acara)
                                ];
                            });
@@ -124,7 +80,6 @@ class ArticleController extends Controller
         return $articles->toArray();
     }
 
-    // Method untuk API
     public function latest()
     {
         $articles = Artikel::with(['gambarUtama'])
@@ -138,7 +93,7 @@ class ArticleController extends Controller
                                    'excerpt' => Str::limit($artikel->deskripsi, 100),
                                    'author' => $artikel->penulis ?? 'Admin',
                                    'date' => $artikel->tanggal_acara->format('Y-m-d'),
-                                   'image' => $this->getFullImageUrl($artikel) // FIXED
+                                   'image' => $this->getCorrectImageUrl($artikel)
                                ];
                            });
 
@@ -151,7 +106,62 @@ class ArticleController extends Controller
         return response()->json($featuredArticles);
     }
 
-    // Helper methods
+    // PERBAIKAN UTAMA: Method untuk mendapatkan URL gambar yang benar
+    private function getCorrectImageUrl($artikel)
+    {
+        if ($artikel->gambarUtama) {
+            $url = $artikel->gambarUtama->url;
+
+            // Debug untuk melihat format URL yang disimpan
+            \Log::info('Original URL from DB: ' . $url);
+
+            // Jika sudah URL lengkap (http/https), return as is
+            if (str_starts_with($url, 'http')) {
+                return $url;
+            }
+
+            // Jika sudah dimulai dengan 'storage/', hapus storage/ terlebih dahulu
+            if (str_starts_with($url, 'storage/')) {
+                $url = str_replace('storage/', '', $url);
+            }
+
+            // Pastikan file benar-benar ada di storage
+            if (Storage::disk('public')->exists($url)) {
+                $fullUrl = asset('storage/' . $url);
+                \Log::info('Generated URL: ' . $fullUrl);
+                return $fullUrl;
+            }
+
+            \Log::warning('File not found in storage: ' . $url);
+        }
+
+        // Default image
+        return asset('storage/article/default.jpg');
+    }
+
+    private function getCorrectGambarUrl($gambar)
+    {
+        $url = $gambar->url;
+
+        // Jika sudah URL lengkap (http/https), return as is
+        if (str_starts_with($url, 'http')) {
+            return $url;
+        }
+
+        // Jika sudah dimulai dengan 'storage/', hapus storage/ terlebih dahulu
+        if (str_starts_with($url, 'storage/')) {
+            $url = str_replace('storage/', '', $url);
+        }
+
+        // Pastikan file benar-benar ada di storage
+        if (Storage::disk('public')->exists($url)) {
+            return asset('storage/' . $url);
+        }
+
+        // Default image jika file tidak ditemukan
+        return asset('storage/article/default.jpg');
+    }
+
     private function isFeatured($artikel)
     {
         return $artikel->tanggal_acara->diffInDays(now()) <= 30;
@@ -164,7 +174,6 @@ class ArticleController extends Controller
         return $formatted;
     }
 
-    // Method untuk filtering berdasarkan pencarian (untuk AJAX)
     public function search(Request $request)
     {
         $query = $request->get('query');
@@ -182,7 +191,7 @@ class ArticleController extends Controller
                                    'excerpt' => Str::limit($artikel->deskripsi, 150),
                                    'author' => $artikel->penulis ?? 'Admin',
                                    'date' => $artikel->tanggal_acara->format('Y-m-d'),
-                                   'image' => $this->getFullImageUrl($artikel) // FIXED
+                                   'image' => $this->getCorrectImageUrl($artikel)
                                ];
                            });
 

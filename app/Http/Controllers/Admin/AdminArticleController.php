@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Admin/AdminArticleController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -8,164 +9,144 @@ use App\Models\Gambar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class AdminArticleController extends Controller
 {
-    /**
-     * Display a listing of the articles.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $articles = Artikel::latest()->get();
-        return view('admin.articles.index', compact('articles'));
+        $search = $request->get('search');
+        $perPage = $request->get('per_page', 10);
+
+        $articles = Artikel::with(['gambarUtama'])
+            ->when($search, function ($query, $search) {
+                return $query->where('nama_acara', 'like', "%{$search}%")
+                           ->orWhere('penulis', 'like', "%{$search}%")
+                           ->orWhere('deskripsi', 'like', "%{$search}%");
+            })
+            ->orderBy('tanggal_acara', 'desc')
+            ->paginate($perPage);
+
+        return view('admin.articles.index', compact('articles', 'search', 'perPage'));
     }
 
-    /**
-     * Show the form for creating a new article.
-     */
     public function create()
     {
         return view('admin.articles.create');
     }
 
-    /**
-     * Store a newly created article in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'gambar_utama' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'gambar_tambahan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'nama_acara' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'penulis' => 'required|string|max:255',
+            'tanggal_acara' => 'required|date',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Upload main image
-        $gambarUtama = $request->file('gambar_utama');
-        $gambarUtamaPath = $gambarUtama->store('article', 'public');
-
-        // Get author name
-        $authorName = Auth::check() ? Auth::user()->name : 'Admin';
-
-        // Create article
         $artikel = Artikel::create([
-            'id' => Str::uuid(),
-            'judul' => $request->judul,
-            'konten' => $request->konten,
-            'gambar_utama' => $gambarUtamaPath,
-            'penulis' => $authorName,
+            'nama_acara' => $request->nama_acara,
+            'deskripsi' => $request->deskripsi,
+            'penulis' => $request->penulis,
+            'tanggal_acara' => $request->tanggal_acara,
         ]);
 
-        // Upload additional images if any
-        if ($request->hasFile('gambar_tambahan')) {
-            foreach ($request->file('gambar_tambahan') as $image) {
-                $path = $image->store('article', 'public');
+        // Handle image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('article', $filename, 'public');
 
                 Gambar::create([
-                    'artikel_id' => $artikel->id,
-                    'path' => $path,
+                    'acara_id' => $artikel->id,
+                    'url' => 'storage/' . $path,
+                    'kategori' => 'ACARA'
                 ]);
             }
         }
 
         return redirect()->route('admin.articles.index')
-            ->with('success', 'Artikel berhasil dibuat');
+                         ->with('success', 'Artikel berhasil dibuat!');
     }
 
-    /**
-     * Show the form for editing the specified article.
-     */
+    public function show(Artikel $article)
+    {
+        $article->load(['gambar']);
+        return view('admin.articles.show', compact('article'));
+    }
+
     public function edit(Artikel $article)
     {
-        $article->load('gambar');
+        $article->load(['gambar']);
         return view('admin.articles.edit', compact('article'));
     }
 
-    /**
-     * Update the specified article in storage.
-     */
     public function update(Request $request, Artikel $article)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
-            'konten' => 'required|string',
-            'gambar_utama' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'gambar_tambahan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'nama_acara' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'penulis' => 'required|string|max:255',
+            'tanggal_acara' => 'required|date',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $data = [
-            'judul' => $request->judul,
-            'konten' => $request->konten,
-        ];
+        $article->update([
+            'nama_acara' => $request->nama_acara,
+            'deskripsi' => $request->deskripsi,
+            'penulis' => $request->penulis,
+            'tanggal_acara' => $request->tanggal_acara,
+        ]);
 
-        // Update main image if provided
-        if ($request->hasFile('gambar_utama')) {
-            // Delete old image
-            if ($article->gambar_utama && Storage::disk('public')->exists($article->gambar_utama)) {
-                Storage::disk('public')->delete($article->gambar_utama);
-            }
-
-            // Store new image
-            $gambarUtama = $request->file('gambar_utama');
-            $gambarUtamaPath = $gambarUtama->store('article', 'public');
-            $data['gambar_utama'] = $gambarUtamaPath;
-        }
-
-        $article->update($data);
-
-        // Upload additional images if any
-        if ($request->hasFile('gambar_tambahan')) {
-            foreach ($request->file('gambar_tambahan') as $image) {
-                $path = $image->store('article', 'public');
+        // Handle new image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('article', $filename, 'public');
 
                 Gambar::create([
-                    'artikel_id' => $article->id,
-                    'path' => $path,
+                    'acara_id' => $article->id,
+                    'url' => 'storage/' . $path,
+                    'kategori' => 'ACARA'
                 ]);
             }
         }
 
         return redirect()->route('admin.articles.index')
-            ->with('success', 'Artikel berhasil diperbarui');
+                         ->with('success', 'Artikel berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified article from storage.
-     */
     public function destroy(Artikel $article)
     {
-        // Delete main image
-        if ($article->gambar_utama && Storage::disk('public')->exists($article->gambar_utama)) {
-            Storage::disk('public')->delete($article->gambar_utama);
-        }
-
-        // Delete additional images
+        // Delete associated images from storage
         foreach ($article->gambar as $gambar) {
-            if (Storage::disk('public')->exists($gambar->path)) {
-                Storage::disk('public')->delete($gambar->path);
+            $imagePath = str_replace('storage/', '', $gambar->url);
+            if (Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
             }
-            $gambar->delete();
         }
 
+        // Delete the article (images will be deleted via cascade)
         $article->delete();
 
         return redirect()->route('admin.articles.index')
-            ->with('success', 'Artikel berhasil dihapus');
+                         ->with('success', 'Artikel berhasil dihapus!');
     }
 
-    /**
-     * Remove the specified additional image from storage.
-     */
     public function destroyImage(Gambar $gambar)
     {
-        if (Storage::disk('public')->exists($gambar->path)) {
-            Storage::disk('public')->delete($gambar->path);
+        // Delete image from storage
+        $imagePath = str_replace('storage/', '', $gambar->url);
+        if (Storage::disk('public')->exists($imagePath)) {
+            Storage::disk('public')->delete($imagePath);
         }
 
+        // Delete image record
         $gambar->delete();
 
-        return redirect()->back()
-            ->with('success', 'Gambar berhasil dihapus');
+        return response()->json(['success' => true]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ScheduleAvailability;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -14,6 +15,8 @@ class DatabaseSeeder extends Seeder
             ArtikelSeeder::class,
             JenisPengujianSeeder::class,
             KategoriAlatSeeder::class,
+            StaffSeeder::class,
+            AlatSeeder::class,
         ]);
     }
 }

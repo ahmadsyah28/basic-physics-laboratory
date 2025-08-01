@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,7 +42,7 @@
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
-<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg">
+    <header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-4 shadow-lg">
@@ -95,15 +95,15 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.visits.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visits.*') && !request()->routeIs('admin.visits.calendar') ? 'active' : '' }}">
-                            <i class="fas fa-calendar-check mr-3 w-5"></i>
+                        <a href="{{ route('admin.visits.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visits.*') ? 'active' : '' }}">
+                            <i class="fas fa-clipboard-check mr-3 w-5"></i>
                             <span>Kelola Kunjungan</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.visits.calendar') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.visits.calendar') ? 'active' : '' }}">
-                            <i class="fas fa-calendar-alt mr-3 w-5"></i>
-                            <span>Kalender Kunjungan</span>
+                        <a href="{{ route('admin.schedule.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.schedule.*') ? 'active' : '' }}">
+                            <i class="fas fa-calendar-times mr-3 w-5"></i>
+                            <span>Kelola Jadwal Available</span>
                         </a>
                     </li>
                     <li>

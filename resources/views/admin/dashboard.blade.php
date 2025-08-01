@@ -189,32 +189,11 @@
                 </div>
             </div>
             <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            {{-- <a href="{{ route('admin.equipment-loan.index') }}"
+            <a href="{{ route('admin.peminjaman.index') }}"
                class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
                 Kelola peminjaman
                 <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a> --}}
-        </div>
-
-        <!-- Pengujian Card -->
-        <div class="stat-card emerald card p-6 fade-up" style="animation-delay: 0.2s">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Pengujian</p>
-                    <p class="text-3xl font-semibold text-gray-900">
-                        {{ \App\Models\Pengujian::where('status', 'pending')->count() }}
-                    </p>
-                </div>
-                <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-flask text-emerald-600 text-xl"></i>
-                </div>
-            </div>
-            <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            {{-- <a href="{{ route('admin.testing.index') }}"
-               class="inline-flex items-center text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                Kelola pengujian
-                <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a> --}}
+            </a>
         </div>
 
         <!-- Kunjungan Card -->

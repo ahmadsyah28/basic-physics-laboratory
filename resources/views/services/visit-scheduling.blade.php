@@ -80,6 +80,70 @@
             </p>
         </div>
 
+         <!-- How to Borrow Info -->
+        <div class="mb-16 scroll-animate" data-animation="fade-up" data-delay="100">
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-8 border border-yellow-200">
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold text-yellow-800 mb-3 flex items-center justify-center">
+                        <i class="fas fa-info-circle mr-3"></i>
+                        Cara Pengajuan Kunjungan Laboratorium
+                    </h3>
+                    <p class="text-yellow-700">Ikuti langkah-langkah mudah berikut untuk pengajuan kunjungan laboratorium</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">1</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Informasi Kontak</h4>
+                        <p class="text-sm text-yellow-700">Isi data diri dan kontak yang dapat dihubungi</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">2</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Informasi Kunjungan</h4>
+                        <p class="text-sm text-yellow-700">Tentukan detail jadwal dan tujuan kunjungan Anda</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">3</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Upload Surat</h4>
+                        <p class="text-sm text-yellow-700">Upload surat Kunjungan sesuai dengan format tertera</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">4</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Pantau Pengajuan</h4>
+                        <p class="text-sm text-yellow-700">lanjutkan pengajuan via Whatshap dan pantau pengajuan melalui link tersedia</p>
+                    </div>
+
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-yellow-300">
+                            <span class="text-xl font-bold text-yellow-600">5</span>
+                        </div>
+                        <h4 class="font-semibold text-yellow-800 mb-2">Tunggu Konfirmasi</h4>
+                        <p class="text-sm text-yellow-700">Staff lab akan konfirmasi dalam 1x24 jam</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-yellow-100 rounded-xl border border-yellow-300">
+                    <div class="flex items-start space-x-3">
+                        <i class="fas fa-lightbulb text-yellow-600 mt-1"></i>
+                        <div class="text-sm text-yellow-700">
+                            <strong>Tips:</strong> Pastikan membawa kartu identitas, surat pengajuan, dan siap mengikuti briefing penggunaan alat untuk keamanan bersama. surat pengajuan kunjungan merujuk pada <a href="https://drive.google.com/file/d/1UMECW8-I1haaMoSVezYNgUbGNmWRr-5k/view?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>SOP Laboratorium FISIKA DASAR</strong></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Success/Error Messages -->
         @if(session('success'))
         <div class="mb-8 scroll-animate" data-animation="fade-up">
@@ -111,11 +175,10 @@
 
         <!-- Main Form -->
         <div class="scroll-animate" data-animation="fade-up" data-delay="200">
-            <form action="{{ route('visit.store') }}" method="POST" class="bg-white rounded-3xl shadow-2xl p-8 md:p-12 space-y-8" id="visitForm">
-                @csrf
+            <form action="{{ route('visit.store') }}" method="POST" enctype="multipart/form-data" class="bg-white border-2 rounded-3xl shadow-2xl p-8 md:p-12 space-y-8" id="visitForm">                @csrf
 
                 <!-- Contact Information -->
-                <div class="space-y-8">
+                <div class="space-y-8 ">
                     <div class="border-b border-gray-200 pb-6">
                         <h3 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
                             <i class="fas fa-user text-blue-600 mr-3"></i>
@@ -290,6 +353,97 @@
                     </div>
                 </div>
 
+                <div class="space-y-8">
+     <div class="space-y-8">
+        <div class="border-b border-gray-200 pb-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+                <i class="fas fa-file-upload text-blue-600 mr-3"></i>
+                Upload Dokumen
+            </h3>
+            <p class="text-gray-600">Upload surat pengajuan kunjungan sesuai format yang telah ditentukan</p>
+        </div>
+
+        <!-- Document Upload -->
+        <div class="form-group">
+            <label for="document" class="block text-sm font-semibold text-gray-700 mb-2">
+                Surat Pengajuan <span class="text-red-500">*</span>
+            </label>
+
+            <!-- Upload Area -->
+            <div class="relative">
+                <input type="file"
+                       id="document"
+                       name="document"
+                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 @error('document') border-red-500 @enderror"
+                       onchange="handleFileSelect(this)">
+
+                <div id="uploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors duration-200 bg-gray-50 hover:bg-blue-50">
+                    <div id="uploadContent">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-lg font-medium text-gray-700 mb-2">Klik untuk upload atau drag & drop</p>
+                        <p class="text-sm text-gray-500 mb-4">PDF, DOC, DOCX, JPG, JPEG, PNG (Maks. 5MB)</p>
+                        <div class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
+                            <i class="fas fa-upload mr-2"></i>
+                            Pilih File
+                        </div>
+                    </div>
+
+                    <!-- File Preview (hidden by default) -->
+                    <div id="filePreview" class="hidden">
+                        <div class="flex items-center justify-center space-x-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-blue-600 text-3xl mr-3"></i>
+                                <div class="text-left">
+                                    <p id="fileName" class="font-medium text-gray-900"></p>
+                                    <p id="fileSize" class="text-sm text-gray-500"></p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="removeFile()" class="text-red-600 hover:text-red-800 transition-colors duration-200">
+                                <i class="fas fa-trash-alt text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="uploadProgress" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 100%"></div>
+                            </div>
+                            <p class="text-sm text-green-600 mt-2 flex items-center">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                File berhasil dipilih
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @error('document')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+
+            <!-- Document Format Info -->
+            <div class="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                    <div class="text-sm text-blue-700">
+                        <p class="font-semibold mb-2">Format Surat Pengajuan:</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Surat resmi dari institusi/organisasi</li>
+                            <li>Mencantumkan tujuan kunjungan yang jelas</li>
+                            <li>Menyertakan jumlah peserta dan jadwal yang diinginkan</li>
+                            <li>Ditandatangani oleh pejabat yang berwenang</li>
+                        </ul>
+                        <p class="mt-2">
+                            <strong>Template surat dapat diunduh
+                            <a href="https://drive.google.com/file/d/1UMECW8-I1haaMoSVezYNgUbGNmWRr-5k/view?usp=sharing"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-blue-600 hover:text-blue-800 underline">di sini</a></strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                 <!-- Terms and Conditions -->
                 <div class="border-t border-gray-200 pt-8">
                     <label class="flex items-start space-x-3 cursor-pointer group">
@@ -310,14 +464,14 @@
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-center pt-6">
-                    <button type="submit"
-                            id="submitButton"
-                            class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-12 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center">
-                        <i class="fas fa-paper-plane mr-3"></i>
-                        Kirim Permintaan Jadwal
-                    </button>
-                </div>
+               <div class="flex justify-center pt-6">
+        <button type="submit"
+                id="submitButton"
+                class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-12 py-4 rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-300 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center">
+            <i class="fas fa-paper-plane mr-3"></i>
+            Kirim Permintaan Jadwal
+        </button>
+    </div>
             </form>
         </div>
     </div>
@@ -618,12 +772,413 @@ input[type="checkbox"]:checked {
         height: 40px;
     }
 }
+
+/* Toast Notification Styles - Tambahkan ke bagian <style> yang ada */
+.toast-notification {
+    max-width: 400px;
+    word-wrap: break-word;
+}
+
+.toast-notification .fa-times:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 640px) {
+    #toast-container {
+        left: 1rem;
+        right: 1rem;
+        top: 1rem;
+    }
+
+    .toast-notification {
+        max-width: none;
+    }
+}
+
+/* Loading Animation Enhancement */
+.time-slot-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Toast Animation */
+.toast-enter {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.toast-enter-active {
+    transform: translateX(0);
+    opacity: 1;
+    transition: all 0.3s ease-out;
+}
+
+.toast-exit {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-exit-active {
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease-in;
+}
 </style>
 
 <script>
+// Replace all alert() calls with modern toast notifications
 document.addEventListener('DOMContentLoaded', function() {
+    // ===== MODERN TOAST NOTIFICATION SYSTEM =====
+
+    // Create toast container if it doesn't exist
+    function createToastContainer() {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'fixed top-4 right-4 z-50 space-y-4';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'info', duration = 5000) {
+        const container = createToastContainer();
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification transform translate-x-full opacity-0 transition-all duration-300 ease-out`;
+
+        // Define styles based on type
+        const styles = {
+            success: 'bg-green-50 border-green-200 text-green-800',
+            error: 'bg-red-50 border-red-200 text-red-800',
+            warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+            info: 'bg-blue-50 border-blue-200 text-blue-800'
+        };
+
+        const icons = {
+            success: 'fa-check-circle text-green-500',
+            error: 'fa-exclamation-circle text-red-500',
+            warning: 'fa-exclamation-triangle text-yellow-500',
+            info: 'fa-info-circle text-blue-500'
+        };
+
+        toast.innerHTML = `
+            <div class="flex items-start p-4 rounded-xl border shadow-lg backdrop-blur-sm max-w-sm ${styles[type]}">
+                <div class="flex-shrink-0">
+                    <i class="fas ${icons[type]} text-lg"></i>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium leading-5">${message}</p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button class="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200" onclick="dismissToast(this)">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            toast.classList.add('translate-x-0', 'opacity-100');
+        }, 100);
+
+        // Auto dismiss
+        if (duration > 0) {
+            setTimeout(() => {
+                dismissToast(toast.querySelector('button'));
+            }, duration);
+        }
+
+        return toast;
+    }
+
+    // Dismiss toast
+    window.dismissToast = function(button) {
+        const toast = button.closest('.toast-notification');
+        if (toast) {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+    };
+
+    // Show confirmation dialog with modern styling
+    function showConfirmDialog(message, title = 'Konfirmasi', confirmText = 'Ya', cancelText = 'Batal') {
+        return new Promise((resolve) => {
+            // Create modal backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            backdrop.style.backdropFilter = 'blur(4px)';
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'bg-white rounded-2xl shadow-2xl max-w-md w-full transform scale-95 opacity-0 transition-all duration-300';
+
+            modal.innerHTML = `
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">${title}</h3>
+                    </div>
+                    <p class="text-gray-600 mb-6 leading-relaxed">${message}</p>
+                    <div class="flex justify-end space-x-3">
+                        <button class="cancel-btn px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium">
+                            ${cancelText}
+                        </button>
+                        <button class="confirm-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                            ${confirmText}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+
+            // Animate in
+            setTimeout(() => {
+                modal.classList.remove('scale-95', 'opacity-0');
+                modal.classList.add('scale-100', 'opacity-100');
+            }, 100);
+
+            // Handle buttons
+            const confirmBtn = modal.querySelector('.confirm-btn');
+            const cancelBtn = modal.querySelector('.cancel-btn');
+
+            function cleanup() {
+                modal.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    if (backdrop.parentNode) {
+                        backdrop.parentNode.removeChild(backdrop);
+                    }
+                }, 300);
+            }
+
+            confirmBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(true);
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(false);
+            });
+
+            // Close on backdrop click
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    cleanup();
+                    resolve(false);
+                }
+            });
+
+            // Focus confirm button
+            confirmBtn.focus();
+        });
+    }
+
     // CSRF Token for AJAX requests
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    // ===== FILE UPLOAD FUNCTIONALITY =====
+
+    // File upload handling - Global scope untuk onclick
+    window.handleFileSelect = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        console.log('File selected:', file.name, file.type, file.size); // Debug log
+
+        // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showToast('Ukuran file terlalu besar. Maksimal 5MB.', 'error');
+            input.value = '';
+            return;
+        }
+
+        // Validate file type
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/jpg',
+            'image/png'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            showToast('Format file tidak diizinkan. Hanya PDF, DOC, DOCX, JPG, JPEG, dan PNG yang diperbolehkan.', 'error');
+            input.value = '';
+            return;
+        }
+
+        // Show file preview
+        showFilePreview(file);
+        showToast('File berhasil dipilih!', 'success', 3000);
+    };
+
+    window.showFilePreview = function(file) {
+        const uploadContent = document.getElementById('uploadContent');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadArea = document.getElementById('uploadArea');
+
+        if (!uploadContent || !filePreview || !fileName || !fileSize || !uploadArea) {
+            console.error('Upload elements not found');
+            return;
+        }
+
+        // Hide upload content and show preview
+        uploadContent.classList.add('hidden');
+        filePreview.classList.remove('hidden');
+
+        // Update file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+
+        // Update upload area style
+        uploadArea.classList.remove('border-gray-300', 'bg-gray-50');
+        uploadArea.classList.add('border-green-300', 'bg-green-50');
+    };
+
+    window.removeFile = function() {
+        const input = document.getElementById('document');
+        const uploadContent = document.getElementById('uploadContent');
+        const filePreview = document.getElementById('filePreview');
+        const uploadArea = document.getElementById('uploadArea');
+
+        if (!input || !uploadContent || !filePreview || !uploadArea) {
+            console.error('Upload elements not found');
+            return;
+        }
+
+        // Clear input
+        input.value = '';
+
+        // Show upload content and hide preview
+        uploadContent.classList.remove('hidden');
+        filePreview.classList.add('hidden');
+
+        // Reset upload area style
+        uploadArea.classList.remove('border-green-300', 'bg-green-50');
+        uploadArea.classList.add('border-gray-300', 'bg-gray-50');
+
+        showToast('File berhasil dihapus', 'info', 2000);
+    };
+
+    window.formatFileSize = function(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
+
+    // Handle drag and drop
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('document');
+
+    if (uploadArea && fileInput) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadArea.classList.add('border-blue-400', 'bg-blue-50');
+        }
+
+        function unhighlight(e) {
+            if (!fileInput.files[0]) {
+                uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
+            }
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect(fileInput);
+            }
+        }
+    }
+
+    // ===== WHATSAPP DIRECT INTEGRATION =====
+
+    // Function to generate WhatsApp message using backend data
+    function generateWhatsAppMessage(visitData, trackingUrl) {
+        const adminPhone = '6287801482963'; // Ganti dengan nomor admin yang sebenarnya
+
+        let message = "*🔬 PENGAJUAN KUNJUNGAN LABORATORIUM FISIKA DASAR*\n\n";
+        message += "📋 *INFORMASI PENGUNJUNG*\n";
+        message += `👤 Nama: ${visitData.name}\n`;
+        message += `🏢 Institusi: ${visitData.institution}\n`;
+        message += `📧 Email: ${visitData.email}\n`;
+        message += `📱 Telepon: ${visitData.phone}\n\n`;
+
+        message += "📅 *DETAIL KUNJUNGAN*\n";
+        message += `🎯 Tujuan: ${visitData.visit_purpose}\n`;
+        message += `📆 Tanggal: ${visitData.visit_date}\n`;
+        message += `⏰ Waktu: ${visitData.visit_time}\n`;
+        message += `👥 Jumlah Peserta: ${visitData.participant_count} orang\n\n`;
+
+        if (visitData.additional_notes) {
+            message += "📝 *CATATAN TAMBAHAN*\n";
+            message += `${visitData.additional_notes}\n\n`;
+        }
+
+        if (trackingUrl) {
+            message += "🔗 *LINK TRACKING*\n";
+            message += `${trackingUrl}\n\n`;
+        }
+
+        message += "⚠️ *MOHON DIPROSES SEGERA*\n";
+        message += "Status: MENUNGGU KONFIRMASI\n";
+        message += `Waktu Pengajuan: ${new Date().toLocaleString('id-ID')}\n\n`;
+
+        message += "Terima kasih! 🙏";
+
+        return {
+            phone: adminPhone,
+            message: message
+        };
+    }
+
+    // Function to open WhatsApp
+    function openWhatsApp(phone, message) {
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
+    }
 
     // ===== MOLECULAR ANIMATION JAVASCRIPT =====
     function createMolecularAnimation() {
@@ -689,6 +1244,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize molecular animation
     createMolecularAnimation();
 
+    // ===== SCROLL ANIMATIONS =====
     // Intersection Observer for scroll animations
     const animatedElements = document.querySelectorAll('.scroll-animate');
 
@@ -717,41 +1273,150 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeSelect = document.getElementById('visit_time');
     const timeSlotInfo = document.getElementById('timeSlotInfo');
 
-    // Form submission handler
-    form.addEventListener('submit', function(e) {
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Mengirim Permintaan...';
-    });
+    // Form submission handler - MODIFIED FOR WHATSAPP INTEGRATION
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Validate form first
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Check if required fields are filled
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.focus();
+                    return;
+                }
+            });
+
+            if (!isValid) {
+                showToast('Mohon lengkapi semua field yang wajib diisi.', 'warning');
+                return;
+            }
+
+            // Disable submit button
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Memproses...';
+            }
+
+            // Collect form data
+            const formData = new FormData(form);
+
+            try {
+                // Submit form to server first
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show success message
+                    showToast('Pengajuan berhasil disimpan! Sekarang akan membuka WhatsApp untuk menghubungi admin.', 'success');
+
+                    // Generate and send WhatsApp message using backend data
+                    const whatsappData = generateWhatsAppMessage(data.visit_data, data.tracking_url);
+
+                    // Open WhatsApp after a short delay
+                    setTimeout(() => {
+                        openWhatsApp(whatsappData.phone, whatsappData.message);
+
+                        // Show completion message
+                        setTimeout(async () => {
+                            const referenceId = data.reference_id || 'Akan diberikan melalui WhatsApp';
+                            showToast(`Pengajuan berhasil dikirim! ID Pengajuan: ${referenceId}`, 'success', 8000);
+
+                            // Ask about tracking page if URL available
+                            if (data.tracking_url) {
+                                const showTracking = await showConfirmDialog(
+                                    'Apakah Anda ingin melihat halaman tracking pengajuan?',
+                                    'Lihat Status Pengajuan',
+                                    'Ya, Lihat Status',
+                                    'Nanti Saja'
+                                );
+
+                              if (showTracking) {
+                                    window.location.href = data.tracking_url;
+                                } else {
+                                    // BAGIAN INI YANG DITAMBAHKAN BARU
+                                    showToast('Terima kasih! Anda akan diarahkan ke beranda.', 'info', 3000);
+                                    setTimeout(() => {
+                                        window.location.href = "{{ route('home') }}";
+                                    }, 2000);
+                                }
+                                }
+                        }, 2000);
+                    }, 1000);
+
+                } else {
+                    // Show error message
+                    showToast('Terjadi kesalahan: ' + (data.message || 'Silakan coba lagi.'), 'error');
+
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Kirim Permintaan Jadwal';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan sistem. Silakan coba lagi.', 'error');
+
+                // Re-enable submit button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Kirim Permintaan Jadwal';
+                }
+            }
+        });
+    }
 
     // Date input validation and time slot loading
-    const today = new Date();
-    today.setDate(today.getDate() + 1); // Minimum tomorrow
-    dateInput.min = today.toISOString().split('T')[0];
+    if (dateInput) {
+        const today = new Date();
+        today.setDate(today.getDate() + 1); // Minimum tomorrow
+        dateInput.min = today.toISOString().split('T')[0];
 
-    dateInput.addEventListener('change', function() {
-        const selectedDate = this.value;
+        dateInput.addEventListener('change', function() {
+            const selectedDate = this.value;
 
-        if (!selectedDate) {
-            resetTimeSlots();
-            return;
-        }
+            if (!selectedDate) {
+                resetTimeSlots();
+                return;
+            }
 
-        const date = new Date(selectedDate);
-        const day = date.getDay();
+            const date = new Date(selectedDate);
+            const day = date.getDay();
 
-        // Check if it's Sunday
-        if (day === 0) {
-            alert('Laboratorium tutup pada hari Minggu. Silakan pilih hari lain.');
-            this.value = '';
-            resetTimeSlots();
-            return;
-        }
+            // Check if it's Sunday
+            if (day === 0) {
+                showToast('Laboratorium tutup pada hari Minggu. Silakan pilih hari lain.', 'warning');
+                this.value = '';
+                resetTimeSlots();
+                return;
+            }
 
-        // Load available time slots
-        loadAvailableTimeSlots(selectedDate);
-    });
+            // Load available time slots
+            loadAvailableTimeSlots(selectedDate);
+        });
+    }
 
     function loadAvailableTimeSlots(date) {
+        if (!timeSelect || !timeSlotInfo) return;
+
         // Show loading state
         timeSelect.innerHTML = '<option value="">Memuat jadwal tersedia...</option>';
         timeSelect.disabled = true;
@@ -759,7 +1424,7 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSlotInfo.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat jadwal...';
 
         // Make AJAX request to get available slots
-        fetch(`{{ route('visit.available-slots') }}?date=${date}`, {
+        fetch(`/services/visit-scheduling/available-slots?date=${date}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -771,6 +1436,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 populateTimeSlots(data.slots, data.date);
+                showToast('Jadwal berhasil dimuat!', 'success', 2000);
             } else {
                 showTimeSlotError(data.message);
             }
@@ -778,6 +1444,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error loading time slots:', error);
             showTimeSlotError('Terjadi kesalahan saat memuat jadwal. Silakan coba lagi.');
+            showToast('Gagal memuat jadwal. Silakan refresh halaman.', 'error');
         })
         .finally(() => {
             timeSelect.classList.remove('time-slot-loading');
@@ -785,12 +1452,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function populateTimeSlots(slots, dateFormatted) {
+        if (!timeSelect || !timeSlotInfo) return;
+
         timeSelect.innerHTML = '<option value="">Pilih waktu kunjungan</option>';
 
         if (Object.keys(slots).length === 0) {
             timeSelect.innerHTML += '<option value="" disabled>Tidak ada jadwal tersedia</option>';
             timeSlotInfo.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>Semua jadwal pada tanggal ini sudah terisi.';
             timeSelect.disabled = true;
+            showToast('Tidak ada slot waktu tersedia untuk tanggal yang dipilih.', 'warning');
         } else {
             Object.entries(slots).forEach(([time, label]) => {
                 const option = document.createElement('option');
@@ -805,52 +1475,78 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showTimeSlotError(message) {
+        if (!timeSelect || !timeSlotInfo) return;
+
         timeSelect.innerHTML = '<option value="">Tidak dapat memuat jadwal</option>';
         timeSelect.disabled = true;
         timeSlotInfo.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>${message}`;
     }
 
     function resetTimeSlots() {
+        if (!timeSelect || !timeSlotInfo) return;
+
         timeSelect.innerHTML = '<option value="">Pilih tanggal terlebih dahulu</option>';
         timeSelect.disabled = true;
         timeSlotInfo.innerHTML = '';
     }
 
+    // ===== FORM VALIDATION =====
     // Participant count validation
     const participantInput = document.getElementById('participant_count');
-    participantInput.addEventListener('input', function() {
-        const count = parseInt(this.value);
-        if (count > 50) {
-            this.setCustomValidity('Jumlah peserta maksimal 50 orang. Untuk grup lebih besar, silakan hubungi kami langsung.');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
+    if (participantInput) {
+        participantInput.addEventListener('input', function() {
+            const count = parseInt(this.value);
+            if (count > 50) {
+                this.setCustomValidity('Jumlah peserta maksimal 50 orang. Untuk grup lebih besar, silakan hubungi kami langsung.');
+                showToast('Maksimal 50 peserta per kunjungan. Hubungi kami untuk grup besar.', 'warning');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
 
     // Auto-grow textarea
     const textarea = document.getElementById('additional_notes');
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    });
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
 
-    // Restore old values if form had errors
-    @if(old('visit_date'))
-        setTimeout(() => {
-            const oldDate = '{{ old('visit_date') }}';
-            if (oldDate) {
-                loadAvailableTimeSlots(oldDate);
+    // Show welcome message
+    setTimeout(() => {
+        showToast('Selamat datang! Silakan isi form untuk mengajukan kunjungan laboratorium.', 'info', 4000);
+    }, 1000);
 
-                // Set old time value after slots are loaded
-                setTimeout(() => {
-                    const oldTime = '{{ old('visit_time') }}';
-                    if (oldTime) {
-                        timeSelect.value = oldTime;
-                    }
-                }, 1000);
-            }
-        }, 100);
-    @endif
+    // Log successful initialization
+    console.log('Visit scheduling form with modern notification system initialized successfully');
 });
+
+// Add toast container styles to the document
+const toastStyles = document.createElement('style');
+toastStyles.textContent = `
+    .toast-notification {
+        max-width: 400px;
+        word-wrap: break-word;
+    }
+
+    .toast-notification .fa-times:hover {
+        transform: scale(1.1);
+    }
+
+    @media (max-width: 640px) {
+        #toast-container {
+            left: 1rem;
+            right: 1rem;
+            top: 1rem;
+        }
+
+        .toast-notification {
+            max-width: none;
+        }
+    }
+`;
+document.head.appendChild(toastStyles);
 </script>
 @endsection

@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminStaffController;
 use App\Http\Controllers\Admin\AdminVisitController;
+use App\Http\Controllers\Admin\AdminScheduleController;
 use App\Http\Controllers\Admin\AdminArticleController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVisiMisiController;
@@ -60,11 +61,27 @@ Route::prefix('services/equipment-loan')->name('equipment.')->group(function () 
     Route::get('/history', [EquipmentLoanController::class, 'getLoanHistory'])->name('history');
 });
 
-// Services - Visit Scheduling
+// Services - Visit Scheduling (Updated with new features)
 Route::prefix('services/visit-scheduling')->name('visit.')->group(function () {
     Route::get('/', [VisitSchedulingController::class, 'index'])->name('index');
     Route::post('/schedule', [VisitSchedulingController::class, 'store'])->name('store');
     Route::get('/available-slots', [VisitSchedulingController::class, 'getAvailableSlots'])->name('available-slots');
+});
+
+// Visit Tracking & Document Routes (Public Access)
+Route::prefix('visit')->name('visit.')->group(function () {
+    // Track visit status (public access)
+    Route::get('/track/{id}', [VisitSchedulingController::class, 'track'])
+        ->name('track')
+        ->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
+    // Download document (public access for visitor)
+    Route::get('/document/{kunjungan}', [VisitSchedulingController::class, 'downloadDocument'])
+        ->name('document')
+        ->where('kunjungan', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
+    // Get schedule data (for API or AJAX)
+    Route::get('/schedule-data', [VisitSchedulingController::class, 'getSchedule'])->name('schedule-data');
 });
 
 /*
@@ -91,39 +108,62 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
     Route::resource('staff', AdminStaffController::class);
     Route::get('/staff/{staff}/edit', [AdminStaffController::class, 'edit'])->name('staff.edit');
 
+    // Equipment Management
     Route::prefix('equipment')->name('equipment.')->group(function () {
-    Route::get('/', [AdminEquipmentController::class, 'index'])->name('index');
-    Route::get('/create', [AdminEquipmentController::class, 'create'])->name('create');
-    Route::post('/', [AdminEquipmentController::class, 'store'])->name('store');
-    Route::get('/{equipment}', [AdminEquipmentController::class, 'show'])->name('show');
-    Route::get('/{equipment}/edit', [AdminEquipmentController::class, 'edit'])->name('edit');
-    Route::put('/{equipment}', [AdminEquipmentController::class, 'update'])->name('update');
-    Route::delete('/{equipment}', [AdminEquipmentController::class, 'destroy'])->name('destroy');
-});
+        Route::get('/', [AdminEquipmentController::class, 'index'])->name('index');
+        Route::get('/create', [AdminEquipmentController::class, 'create'])->name('create');
+        Route::post('/', [AdminEquipmentController::class, 'store'])->name('store');
+        Route::get('/{equipment}', [AdminEquipmentController::class, 'show'])->name('show');
+        Route::get('/{equipment}/edit', [AdminEquipmentController::class, 'edit'])->name('edit');
+        Route::put('/{equipment}', [AdminEquipmentController::class, 'update'])->name('update');
+        Route::delete('/{equipment}', [AdminEquipmentController::class, 'destroy'])->name('destroy');
+    });
 
-    // Visit Scheduling Management
+    // Visit Management (Updated with new features)
     Route::prefix('visits')->name('visits.')->group(function () {
         Route::get('/', [AdminVisitController::class, 'index'])->name('index');
-        Route::get('/create', [AdminVisitController::class, 'create'])->name('create');
-        Route::post('/', [AdminVisitController::class, 'store'])->name('store');
         Route::get('/{kunjungan}', [AdminVisitController::class, 'show'])->name('show');
         Route::get('/{kunjungan}/edit', [AdminVisitController::class, 'edit'])->name('edit');
+        Route::get('/{kunjungan}/document', [AdminVisitController::class, 'downloadDocument'])->name('download-document');
         Route::put('/{kunjungan}', [AdminVisitController::class, 'update'])->name('update');
         Route::put('/{kunjungan}/status', [AdminVisitController::class, 'updateStatus'])->name('update-status');
         Route::delete('/{kunjungan}', [AdminVisitController::class, 'destroy'])->name('destroy');
+
+        // Calendar view for visits
         Route::get('/calendar/view', [AdminVisitController::class, 'calendar'])->name('calendar');
-        Route::get('/calendar/data', [AdminVisitController::class, 'getCalendarData'])->name('calendar.data');
+        Route::get('/calendar/data', [AdminVisitController::class, 'getCalendarData'])->name('calendar-data');
+
+        // Export functionality
+        Route::get('/export/data', [AdminVisitController::class, 'export'])->name('export');
+
+        // Get available slots for admin (with exclude option for editing)
+        Route::get('/slots/available', [AdminVisitController::class, 'getAvailableSlots'])->name('available-slots');
+
+        // Download document from admin panel
+        Route::get('/{kunjungan}/document', [AdminVisitController::class, 'downloadDocument'])->name('download-document');
     });
 
+    // Schedule Availability Management
+     Route::prefix('schedule')->name('schedule.')->group(function () {
+        Route::get('/', [AdminScheduleController::class, 'index'])->name('index');
+        Route::get('/show', [AdminScheduleController::class, 'show'])->name('show');
+        Route::post('/update-slot', [AdminScheduleController::class, 'updateSlot'])->name('update-slot');
+        Route::post('/batch-update', [AdminScheduleController::class, 'batchUpdateSlots'])->name('batch-update');
+        Route::post('/copy', [AdminScheduleController::class, 'copySchedule'])->name('copy');
+        Route::get('/calendar/data', [AdminScheduleController::class, 'getCalendarData'])->name('calendar-data');
+    });
+
+    // Peminjaman Management
     Route::prefix('peminjaman')->name('peminjaman.')->group(function () {
-    Route::get('/', [AdminPeminjamanController::class, 'index'])->name('index');
-    Route::get('/{peminjaman}', [AdminPeminjamanController::class, 'show'])->name('show');
-    Route::put('/{peminjaman}/status', [AdminPeminjamanController::class, 'updateStatus'])->name('update-status');
-    Route::delete('/{peminjaman}', [AdminPeminjamanController::class, 'destroy'])->name('destroy');
-    Route::get('/export/csv', [AdminPeminjamanController::class, 'export'])->name('export');
-    Route::post('/bulk-update', [AdminPeminjamanController::class, 'bulkUpdateStatus'])->name('bulk-update');
-    Route::get('/dashboard/data', [AdminPeminjamanController::class, 'getDashboardData'])->name('dashboard-data');
-});
+        Route::get('/', [AdminPeminjamanController::class, 'index'])->name('index');
+        Route::get('/{peminjaman}', [AdminPeminjamanController::class, 'show'])->name('show');
+        Route::put('/{peminjaman}/status', [AdminPeminjamanController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{peminjaman}', [AdminPeminjamanController::class, 'destroy'])->name('destroy');
+        Route::get('/export/csv', [AdminPeminjamanController::class, 'export'])->name('export');
+        Route::post('/bulk-update', [AdminPeminjamanController::class, 'bulkUpdateStatus'])->name('bulk-update');
+        Route::get('/dashboard/data', [AdminPeminjamanController::class, 'getDashboardData'])->name('dashboard-data');
+    });
+
     // Article Management
     Route::resource('articles', AdminArticleController::class);
     Route::delete('/articles/image/{gambar}', [AdminArticleController::class, 'destroyImage'])->name('articles.image.destroy');

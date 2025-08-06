@@ -118,6 +118,12 @@
                             <span>Kelola Visi Misi</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('admin.facilities.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.facilities.*') ? 'active' : '' }}">
+                            <i class="fas fa-building mr-3 w-5"></i>
+                            <span>Kelola Fasilitas</span>
+                        </a>
+                    </li>
                     @if(Auth::user()->role === 'super_admin')
                     <li class="pt-4 mt-4 border-t border-white/20">
                         <a href="{{ route('admin.users.index') }}" class="nav-link flex items-center py-3 px-4 rounded-lg {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">

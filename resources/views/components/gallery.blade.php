@@ -18,7 +18,7 @@
                 Jelajahi <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(to right, #1e3a8a, #2563eb);">Laboratorium Kami</span>
             </h2>
             <p class="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-                Lihat fasilitas canggih dan lingkungan penelitian kami yang mendukung inovasi di bidang geofisika.
+                Lihat fasilitas canggih dan lingkungan penelitian kami yang mendukung inovasi di bidang fisika
             </p>
         </div>
 
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-       
+
     </div>
 </section>
 

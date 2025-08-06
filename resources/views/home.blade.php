@@ -5,5 +5,5 @@
     @include('components.hero')
     @include('components.about')
     @include('components.articles')
-    @include('components.laboratorium')
+    @include('components.gallery')
 @endsection

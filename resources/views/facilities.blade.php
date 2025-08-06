@@ -45,168 +45,114 @@
         <!-- Main Title -->
         <div class="scroll-animate mb-8 opacity-0" data-animation="fade-up" data-delay="200">
             <h1 class="font-poppins text-5xl md:text-7xl font-bold leading-tight mb-6">
-                <span class="text-white">Fasilitas</span>
-                <span class="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg"> Terdepan</span>
+                <span class="text-white">{{ $facility->title ?? 'Fasilitas' }}</span>
+                <span class="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg"> Laboratorium</span>
             </h1>
-            <p class="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
-                Jelajahi ruang-ruang dengan fasilitas lengkap dan teknologi modern untuk mendukung pembelajaran fisika yang optimal
-            </p>
         </div>
     </div>
 </section>
 
-<!-- Main Facilities Section -->
+<!-- Main Content Section -->
 <section class="py-24 bg-gradient-to-b from-gray-50 to-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <!-- Section Header -->
-        <div class="text-center mb-20 scroll-animate" data-animation="fade-down">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <!-- Description Section -->
+        <div class="text-center mb-16 scroll-animate" data-animation="fade-down">
             <div class="inline-flex items-center px-6 py-3 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-sm font-semibold mb-6 shadow-sm">
                 <i class="fas fa-building mr-2"></i>
                 Fasilitas Unggulan
             </div>
-            <h2 class="font-poppins text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Ruang <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Berkualitas</span>
+            <h2 class="font-poppins text-4xl md:text-5xl font-bold text-gray-900 mb-8">
+                Laboratorium <span class="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">Modern</span>
             </h2>
-            <p class="text-gray-600 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed">
-                Setiap ruang dirancang khusus dengan standar internasional dan teknologi terdepan untuk mendukung kegiatan pembelajaran dan penelitian yang optimal.
-            </p>
+            <div class="max-w-4xl mx-auto">
+                <p class="text-gray-600 text-lg md:text-xl leading-relaxed">
+                    {{ $facility->description ?? 'Laboratorium Fisika Dasar dilengkapi dengan berbagai fasilitas modern untuk mendukung kegiatan praktikum dan pembelajaran mahasiswa.' }}
+                </p>
+            </div>
         </div>
 
-        <!-- Facilities Grid Layout -->
-        <div class="space-y-24">
-            @foreach($facilities as $index => $facility)
-            <!-- Facility {{ $index + 1 }} -->
-            <div class="relative">
-                <!-- Background Decoration -->
-                <div class="absolute inset-0 -z-10">
-                    <div class="absolute {{ $index % 2 == 0 ? 'right-0' : 'left-0' }} top-1/2 transform -translate-y-1/2 w-96 h-96 bg-blue-{{ $facility['color_intensity'] }}/5 rounded-full blur-3xl"></div>
+        <!-- Facilities Points Section -->
+        @if($facility && count($facility->facility_points) > 0)
+        <div class="mb-20 scroll-animate" data-animation="fade-up" data-delay="200">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">
+                Fasilitas yang Tersedia
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                @foreach($facility->facility_points as $index => $point)
+                <div class="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 group">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-gray-700 group-hover:text-gray-900 transition-colors duration-300">{{ $point }}</p>
+                    </div>
                 </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                    @if($index % 2 == 0)
-                        <!-- Content Left (7 columns) -->
-                        <div class="lg:col-span-7 space-y-8 scroll-animate" data-animation="slide-left" data-delay="{{ $index * 200 }}">
-                            <!-- Header -->
-                            <div class="space-y-6">
-                                <div class="inline-flex items-center px-4 py-2 bg-blue-{{ $facility['color_intensity'] }}/10 border border-blue-{{ $facility['color_intensity'] }}/20 rounded-full text-blue-{{ $facility['color_intensity'] }} text-sm font-semibold">
-                                    <i class="{{ $facility['icon'] }} mr-2"></i>
-                                    {{ $facility['name'] }}
-                                </div>
-                                <h3 class="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                                    {{ $facility['title'] }}
-                                </h3>
-                                <p class="text-gray-700 text-lg leading-relaxed">
-                                    {{ $facility['description'] }}
-                                </p>
-                            </div>
+        <!-- Images Gallery Section -->
+        @if($facility && count($facility->images) > 0)
+        <div class="scroll-animate" data-animation="fade-up" data-delay="400">
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-12">
+                Galeri Laboratorium
+            </h3>
 
-                            <!-- Features -->
-                            <div class="space-y-6">
-                                <h4 class="text-xl font-bold text-gray-900">Fasilitas Unggulan</h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    @foreach($facility['features'] as $feature)
-                                    <div class="flex items-start space-x-3 group">
-                                        <div class="w-6 h-6 bg-blue-{{ $facility['color_intensity'] }} rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">
-                                            <i class="fas fa-check text-white text-xs"></i>
-                                        </div>
-                                        <span class="text-gray-700 group-hover:text-blue-{{ $facility['color_intensity'] }} transition-colors duration-300">{{ $feature }}</span>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($facility->images as $index => $image)
+                <div class="relative overflow-hidden rounded-xl shadow-lg group cursor-pointer" onclick="openImageModal('{{ Storage::url($image) }}', 'Laboratorium Fisika Dasar {{ $index + 1 }}')">
+                    <img src="{{ Storage::url($image) }}"
+                         alt="Fasilitas Laboratorium {{ $index + 1 }}"
+                         class="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500">
 
-                            <!-- Capacity Info -->
-                            <div class="flex items-center space-x-6 pt-4 border-t border-gray-200">
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-users text-blue-{{ $facility['color_intensity'] }} mr-2"></i>
-                                    <span class="font-medium">{{ $facility['capacity'] }}</span>
-                                </div>
-                            </div>
+                    <!-- Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    <!-- Zoom Icon -->
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <i class="fas fa-search-plus text-gray-700"></i>
                         </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
-                        <!-- Image Right (5 columns) -->
-                        <div class="lg:col-span-5 scroll-animate" data-animation="slide-right" data-delay="{{ ($index * 200) + 100 }}">
-                            <div class="relative overflow-hidden rounded-2xl shadow-2xl group">
-                                <img src="{{ asset('images/facilities/' . $facility['image']) }}"
-                                     alt="{{ $facility['title'] }}"
-                                     class="w-full h-64 lg:h-80 object-cover transform group-hover:scale-105 transition-transform duration-700">
-                                <div class="absolute inset-0 bg-gradient-to-t from-blue-900/40 via-transparent to-transparent"></div>
-
-                                <!-- Floating Icon -->
-                                <div class="absolute top-6 right-6">
-                                    <div class="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                                        <i class="{{ $facility['icon'] }} text-blue-{{ $facility['color_intensity'] }} text-lg"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <!-- Image Left (5 columns) -->
-                        <div class="lg:col-span-5 scroll-animate" data-animation="slide-left" data-delay="{{ $index * 200 }}">
-                            <div class="relative overflow-hidden rounded-2xl shadow-2xl group">
-                                <img src="{{ asset('images/facilities/' . $facility['image']) }}"
-                                     alt="{{ $facility['title'] }}"
-                                     class="w-full h-64 lg:h-80 object-cover transform group-hover:scale-105 transition-transform duration-700">
-                                <div class="absolute inset-0 bg-gradient-to-t from-blue-900/40 via-transparent to-transparent"></div>
-
-                                <!-- Floating Icon -->
-                                <div class="absolute top-6 left-6">
-                                    <div class="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                                        <i class="{{ $facility['icon'] }} text-blue-{{ $facility['color_intensity'] }} text-lg"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Content Right (7 columns) -->
-                        <div class="lg:col-span-7 space-y-8 scroll-animate" data-animation="slide-right" data-delay="{{ ($index * 200) + 100 }}">
-                            <!-- Header -->
-                            <div class="space-y-6">
-                                <div class="inline-flex items-center px-4 py-2 bg-blue-{{ $facility['color_intensity'] }}/10 border border-blue-{{ $facility['color_intensity'] }}/20 rounded-full text-blue-{{ $facility['color_intensity'] }} text-sm font-semibold">
-                                    <i class="{{ $facility['icon'] }} mr-2"></i>
-                                    {{ $facility['name'] }}
-                                </div>
-                                <h3 class="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                                    {{ $facility['title'] }}
-                                </h3>
-                                <p class="text-gray-700 text-lg leading-relaxed">
-                                    {{ $facility['description'] }}
-                                </p>
-                            </div>
-
-
-                            <!-- Features -->
-                            <div class="space-y-6">
-                                <h4 class="text-xl font-bold text-gray-900">Fasilitas Unggulan</h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    @foreach($facility['features'] as $feature)
-                                    <div class="flex items-start space-x-3 group">
-                                        <div class="w-6 h-6 bg-blue-{{ $facility['color_intensity'] }} rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300">
-                                            <i class="fas fa-check text-white text-xs"></i>
-                                        </div>
-                                        <span class="text-gray-700 group-hover:text-blue-{{ $facility['color_intensity'] }} transition-colors duration-300">{{ $feature }}</span>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Capacity Info -->
-                            <div class="flex items-center space-x-6 pt-4 border-t border-gray-200">
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-users text-blue-{{ $facility['color_intensity'] }} mr-2"></i>
-                                    <span class="font-medium">{{ $facility['capacity'] }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+        <!-- Call to Action -->
+        <div class="text-center mt-20 scroll-animate" data-animation="fade-up" data-delay="600">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
+                <h3 class="text-2xl font-bold mb-4">Tertarik Menggunakan Fasilitas Kami?</h3>
+                <p class="text-blue-100 mb-6 text-lg">Hubungi kami untuk informasi lebih lanjut tentang penggunaan laboratorium</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="{{ route('visit.index') }}"
+                       class="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors duration-200 border-2 border-white/20">
+                        <i class="fas fa-calendar-plus mr-2"></i>Jadwalkan Kunjungan
+                    </a>
                 </div>
             </div>
-            @endforeach
         </div>
     </div>
 </section>
 
-
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="relative max-w-5xl max-h-[90vh] mx-auto">
+        <button onclick="closeImageModal()"
+                class="absolute -top-12 right-0 bg-white/20 hover:bg-white/30 text-white border border-white/30 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="modalImage" src="" alt="" class="w-full h-auto rounded-lg shadow-2xl">
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent text-white p-6 rounded-b-lg">
+            <h3 id="modalTitle" class="text-xl font-semibold"></h3>
+        </div>
+    </div>
+</div>
 
 <style>
 /* Enhanced Gradient Text */
@@ -376,35 +322,14 @@
     transform: translateY(60px);
 }
 
-.scroll-animate[data-animation="slide-left"] {
-    transform: translateX(-100px);
-}
-
-.scroll-animate[data-animation="slide-right"] {
-    transform: translateX(100px);
-}
-
 .scroll-animate.animate {
     opacity: 1;
-    transform: translateY(0) translateX(0);
+    transform: translateY(0);
 }
 
-/* Enhanced Hover Effects */
-.group:hover .group-hover\:scale-110 {
-    transform: scale(1.1);
-}
-
-.group:hover .group-hover\:translate-x-1 {
-    transform: translateX(0.25rem);
-}
-
-/* Modern Card Shadows */
-.shadow-card {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.shadow-card-hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+/* Modal */
+.modal.active {
+    display: flex !important;
 }
 
 /* Responsive Adjustments */
@@ -412,11 +337,6 @@
     .scroll-animate[data-animation="fade-down"],
     .scroll-animate[data-animation="fade-up"] {
         transform: translateY(40px);
-    }
-
-    .scroll-animate[data-animation="slide-left"],
-    .scroll-animate[data-animation="slide-right"] {
-        transform: translateX(0) translateY(40px);
     }
 
     .molecule {
@@ -433,22 +353,6 @@
         width: 40px;
         height: 40px;
     }
-}
-
-/* Loading Animation */
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
-    }
-    100% {
-        background-position: 1000px 0;
-    }
-}
-
-.shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 1000px 100%;
-    animation: shimmer 2s infinite;
 }
 </style>
 
@@ -518,6 +422,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize molecular animation
     createMolecularAnimation();
 
+    // ===== IMAGE MODAL FUNCTIONALITY =====
+    window.openImageModal = function(imageSrc, title) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+
+        modalImage.src = imageSrc;
+        modalTitle.textContent = title;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeImageModal = function() {
+        const modal = document.getElementById('imageModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    };
+
+    // Close modal on outside click
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeImageModal();
+        }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+
     // Intersection Observer for scroll animations
     const animatedElements = document.querySelectorAll('.scroll-animate');
 
@@ -548,41 +488,6 @@ document.addEventListener('DOMContentLoaded', function() {
             parallax.style.transform = `translateY(${speed}px)`;
         }
     });
-
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Performance optimization: pause animations when not in view
-    const heroSection = document.querySelector('section');
-    const heroObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const molecules = entry.target.querySelectorAll('.molecule');
-            if (entry.isIntersecting) {
-                molecules.forEach(molecule => {
-                    molecule.style.animationPlayState = 'running';
-                });
-            } else {
-                molecules.forEach(molecule => {
-                    molecule.style.animationPlayState = 'paused';
-                });
-            }
-        });
-    });
-
-    if (heroSection) {
-        heroObserver.observe(heroSection);
-    }
 });
 </script>
 @endsection

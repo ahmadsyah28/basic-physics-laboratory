@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminVisiMisiController;
 use App\Http\Controllers\Admin\AdminEquipmentController;
 use App\Http\Controllers\Admin\AdminPeminjamanController;
+use App\Http\Controllers\Admin\AdminFacilityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -197,5 +198,12 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
         Route::post('/misi', [AdminVisiMisiController::class, 'storeMisi'])->name('store-misi');
         Route::put('/misi/{misi}', [AdminVisiMisiController::class, 'updateMisi'])->name('update-misi');
         Route::delete('/misi/{misi}', [AdminVisiMisiController::class, 'destroyMisi'])->name('destroy-misi');
+    });
+
+        // Facility Management
+    Route::prefix('facilities')->name('facilities.')->group(function () {
+        Route::get('/', [AdminFacilityController::class, 'index'])->name('index');
+        Route::get('/edit', [AdminFacilityController::class, 'edit'])->name('edit');
+        Route::put('/update', [AdminFacilityController::class, 'update'])->name('update');
     });
 });

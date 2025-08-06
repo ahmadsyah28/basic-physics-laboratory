@@ -46,7 +46,8 @@ class AdminPeminjamanController extends Controller
         $statistics = [
             'total' => Peminjaman::count(),
             'pending' => Peminjaman::where('status', 'PENDING')->count(),
-            'processing' => Peminjaman::where('status', 'PROCESSING')->count(),
+            'approved' => Peminjaman::where('status', 'APPROVED')->count(),
+            'active' => Peminjaman::where('status', 'ACTIVE')->count(),
             'completed' => Peminjaman::where('status', 'COMPLETED')->count(),
             'overdue' => Peminjaman::overdue()->count(),
             'due_soon' => Peminjaman::dueSoon()->count(),
@@ -71,7 +72,7 @@ class AdminPeminjamanController extends Controller
     public function updateStatus(Request $request, Peminjaman $peminjaman)
     {
         $request->validate([
-            'status' => 'required|in:PENDING,PROCESSING,COMPLETED,CANCELLED',
+            'status' => 'required|in:PENDING,APPROVED,ACTIVE,COMPLETED,CANCELLED',
             'item_conditions' => 'sometimes|array',
             'cancel_reason' => 'sometimes|string|max:500'
         ]);
@@ -82,12 +83,19 @@ class AdminPeminjamanController extends Controller
             $oldStatus = $peminjaman->status;
             $newStatus = $request->status;
 
-            if ($newStatus === 'PROCESSING' && $peminjaman->canBeApproved()) {
+            if ($newStatus === 'APPROVED' && $peminjaman->canBeApproved()) {
                 $success = $peminjaman->approve();
                 if (!$success) {
-                    throw new \Exception('Gagal menyetujui peminjaman');
+                    throw new \Exception('Gagal menyetujui peminjaman. Stok alat tidak mencukupi.');
                 }
                 $message = 'Peminjaman berhasil disetujui';
+            }
+            elseif ($newStatus === 'ACTIVE' && $peminjaman->status === 'APPROVED') {
+                $success = $peminjaman->markAsActive();
+                if (!$success) {
+                    throw new \Exception('Gagal menandai peminjaman sebagai aktif');
+                }
+                $message = 'Peminjaman ditandai sebagai sudah diambil';
             }
             elseif ($newStatus === 'COMPLETED' && $peminjaman->canBeCompleted()) {
                 $itemConditions = $request->item_conditions ?? [];
@@ -98,7 +106,8 @@ class AdminPeminjamanController extends Controller
                 $message = 'Peminjaman berhasil diselesaikan';
             }
             elseif ($newStatus === 'CANCELLED' && $peminjaman->canBeCancelled()) {
-                $success = $peminjaman->cancel($request->cancel_reason);
+                $cancelReason = $request->cancel_reason ?? 'Dibatalkan oleh admin';
+                $success = $peminjaman->cancel($cancelReason);
                 if (!$success) {
                     throw new \Exception('Gagal membatalkan peminjaman');
                 }
@@ -109,11 +118,12 @@ class AdminPeminjamanController extends Controller
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
@@ -149,7 +159,8 @@ class AdminPeminjamanController extends Controller
     {
         $data = [
             'pending_count' => Peminjaman::where('status', 'PENDING')->count(),
-            'processing_count' => Peminjaman::where('status', 'PROCESSING')->count(),
+            'approved_count' => Peminjaman::where('status', 'APPROVED')->count(),
+            'active_count' => Peminjaman::where('status', 'ACTIVE')->count(),
             'overdue_count' => Peminjaman::overdue()->count(),
             'due_soon_count' => Peminjaman::dueSoon()->count(),
             'recent_loans' => Peminjaman::with(['items.alat'])
@@ -251,7 +262,7 @@ class AdminPeminjamanController extends Controller
         $request->validate([
             'peminjaman_ids' => 'required|array',
             'peminjaman_ids.*' => 'exists:peminjaman,id',
-            'bulk_status' => 'required|in:PENDING,PROCESSING,COMPLETED,CANCELLED'
+            'bulk_status' => 'required|in:PENDING,APPROVED,ACTIVE,COMPLETED,CANCELLED'
         ]);
 
         try {
@@ -271,13 +282,29 @@ class AdminPeminjamanController extends Controller
                 $oldStatus = $peminjaman->status;
                 $newStatus = $request->bulk_status;
 
-                if ($newStatus === 'PROCESSING' && $peminjaman->canBeApproved()) {
-                    $peminjaman->approve();
-                    $successCount++;
-                } elseif ($newStatus === 'CANCELLED' && $peminjaman->canBeCancelled()) {
-                    $peminjaman->cancel();
-                    $successCount++;
-                } else {
+                try {
+                    if ($newStatus === 'APPROVED' && $peminjaman->canBeApproved()) {
+                        if ($peminjaman->approve()) {
+                            $successCount++;
+                        } else {
+                            $errorCount++;
+                        }
+                    } elseif ($newStatus === 'ACTIVE' && $peminjaman->status === 'APPROVED') {
+                        if ($peminjaman->markAsActive()) {
+                            $successCount++;
+                        } else {
+                            $errorCount++;
+                        }
+                    } elseif ($newStatus === 'CANCELLED' && $peminjaman->canBeCancelled()) {
+                        if ($peminjaman->cancel()) {
+                            $successCount++;
+                        } else {
+                            $errorCount++;
+                        }
+                    } else {
+                        $errorCount++;
+                    }
+                } catch (\Exception $e) {
                     $errorCount++;
                 }
             }

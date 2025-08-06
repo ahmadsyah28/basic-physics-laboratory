@@ -170,7 +170,7 @@
                     <div class="flex items-start space-x-3">
                         <i class="fas fa-lightbulb text-yellow-600 mt-1"></i>
                         <div class="text-sm text-yellow-700">
-                            <strong>Tips:</strong> Pastikan membawa kartu mahasiswa, surat dari dosen pembimbing, dan siap mengikuti briefing penggunaan alat untuk keamanan bersama.
+                            <strong>Tips:</strong> Pastikan membawa kartu identitas, surat pengajuan, dan siap mengikuti briefing penggunaan alat untuk keamanan bersama. surat pengajuan kunjungan merujuk pada <a href="https://drive.google.com/file/d/1UMECW8-I1haaMoSVezYNgUbGNmWRr-5k/view?usp=sharing" target="_blank" rel="noopener noreferrer"><strong>SOP Laboratorium FISIKA DASAR</strong></a>
                         </div>
                     </div>
                 </div>
@@ -1173,18 +1173,305 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Handle form submission
-document.getElementById('bulkLoanForm').addEventListener('submit', function(e) {
+document.getElementById('bulkLoanForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Prevent default form submission
+
     const selectedEquipmentArray = Object.values(window.selectedEquipment);
     if (selectedEquipmentArray.length === 0) {
-        e.preventDefault();
-        alert('Pilih alat terlebih dahulu.');
+        showToast('Pilih alat terlebih dahulu sebelum mengajukan peminjaman.', 'warning');
         return;
     }
 
-    // Disable submit button to prevent double submission
+    // Validate form first
+    if (!this.checkValidity()) {
+        this.reportValidity();
+        return;
+    }
+
+    // Check required fields
+    const requiredFields = this.querySelectorAll('[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            isValid = false;
+            field.focus();
+            return;
+        }
+    });
+
+    if (!isValid) {
+        showToast('Mohon lengkapi semua field yang wajib diisi.', 'warning');
+        return;
+    }
+
+    // Disable submit button
     const submitBtn = document.getElementById('submit-btn');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Mengirim Permohonan...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>Memproses...';
+
+    // Collect form data
+    const formData = new FormData(this);
+
+    try {
+        // Submit form to server first
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Show success message
+            showToast('Permohonan peminjaman berhasil disimpan! Sekarang akan membuka WhatsApp untuk menghubungi admin.', 'success');
+
+            // Generate and send WhatsApp message using backend data
+            const whatsappData = generateWhatsAppMessage(data.loan_data, data.tracking_url);
+
+            // Open WhatsApp after a short delay
+            setTimeout(() => {
+                openWhatsApp(whatsappData.phone, whatsappData.message);
+
+                // Show completion message
+                setTimeout(async () => {
+                    const referenceId = data.reference_id || 'Akan diberikan melalui WhatsApp';
+                    showToast(`Permohonan berhasil dikirim! ID Peminjaman: ${referenceId}`, 'success', 8000);
+
+                    // Ask about tracking page if URL available
+                    if (data.tracking_url) {
+                        const showTracking = await showConfirmDialog(
+                            'Apakah Anda ingin melihat halaman tracking peminjaman?',
+                            'Lihat Status Peminjaman',
+                            'Ya, Lihat Status',
+                            'Nanti Saja'
+                        );
+
+                        if (showTracking) {
+                            window.location.href = data.tracking_url;
+                        } else {
+                            showToast('Terima kasih! Anda akan diarahkan ke halaman peminjaman.', 'info', 3000);
+                            setTimeout(() => {
+                                window.location.href = "{{ route('equipment.loan') }}";
+                            }, 2000);
+                        }
+                    }
+                }, 2000);
+            }, 1000);
+
+        } else {
+            // Show error message
+            showToast('Terjadi kesalahan: ' + (data.message || 'Silakan coba lagi.'), 'error');
+
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Kirim Permohonan';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Terjadi kesalahan sistem. Silakan coba lagi.', 'error');
+
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-3"></i>Kirim Permohonan';
+    }
 });
+
+// Function to generate WhatsApp message for equipment loan
+function generateWhatsAppMessage(loanData, trackingUrl) {
+    const adminPhone = '6287801482963'; // Ganti dengan nomor admin yang sebenarnya
+
+    let message = "*🔧 PERMOHONAN PEMINJAMAN ALAT LABORATORIUM*\n\n";
+    message += "📋 *INFORMASI PEMINJAM*\n";
+    message += `👤 Nama: ${loanData.name}\n`;
+    message += `🎓 ${loanData.is_mahasiswa_usk ? 'NIM' : 'NIM/NIP'}: ${loanData.student_id}\n`;
+    if (loanData.instansi) {
+        message += `🏢 Instansi: ${loanData.instansi}\n`;
+    }
+    message += `📧 Email: ${loanData.email}\n`;
+    message += `📱 Telepon: ${loanData.phone}\n\n`;
+
+    message += "🔧 *DETAIL PEMINJAMAN*\n";
+    message += `📅 Periode: ${loanData.start_date} - ${loanData.end_date}\n`;
+    message += `🔢 Jumlah: ${loanData.equipment_count} jenis alat (${loanData.total_units} unit)\n`;
+    message += `📝 Alat: ${loanData.equipment_summary}\n\n`;
+
+    message += "🎯 *TUJUAN PENGGUNAAN*\n";
+    message += `${loanData.purpose}\n\n`;
+
+    if (trackingUrl) {
+        message += "🔗 *LINK TRACKING*\n";
+        message += `${trackingUrl}\n\n`;
+    }
+
+    message += "⚠️ *MOHON DIPROSES SEGERA*\n";
+    message += "Status: MENUNGGU PERSETUJUAN\n";
+    message += `ID Peminjaman: ${loanData.reference_number}\n`;
+    message += `Waktu Pengajuan: ${loanData.created_at}\n\n`;
+
+    message += "Terima kasih! 🙏";
+
+    return {
+        phone: adminPhone,
+        message: message
+    };
+}
+
+// Function to open WhatsApp
+function openWhatsApp(phone, message) {
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// Toast notification system (jika belum ada)
+function createToastContainer() {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-4 right-4 z-50 space-y-4';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function showToast(message, type = 'info', duration = 5000) {
+    const container = createToastContainer();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification transform translate-x-full opacity-0 transition-all duration-300 ease-out`;
+
+    const styles = {
+        success: 'bg-green-50 border-green-200 text-green-800',
+        error: 'bg-red-50 border-red-200 text-red-800',
+        warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        info: 'bg-blue-50 border-blue-200 text-blue-800'
+    };
+
+    const icons = {
+        success: 'fa-check-circle text-green-500',
+        error: 'fa-exclamation-circle text-red-500',
+        warning: 'fa-exclamation-triangle text-yellow-500',
+        info: 'fa-info-circle text-blue-500'
+    };
+
+    toast.innerHTML = `
+        <div class="flex items-start p-4 rounded-xl border shadow-lg backdrop-blur-sm max-w-sm ${styles[type]}">
+            <div class="flex-shrink-0">
+                <i class="fas ${icons[type]} text-lg"></i>
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-medium leading-5">${message}</p>
+            </div>
+            <div class="ml-4 flex-shrink-0 flex">
+                <button class="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200" onclick="dismissToast(this)">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full', 'opacity-0');
+        toast.classList.add('translate-x-0', 'opacity-100');
+    }, 100);
+
+    if (duration > 0) {
+        setTimeout(() => {
+            dismissToast(toast.querySelector('button'));
+        }, duration);
+    }
+
+    return toast;
+}
+
+function dismissToast(button) {
+    const toast = button.closest('.toast-notification');
+    if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
+}
+
+function showConfirmDialog(message, title = 'Konfirmasi', confirmText = 'Ya', cancelText = 'Batal') {
+    return new Promise((resolve) => {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        backdrop.style.backdropFilter = 'blur(4px)';
+
+        const modal = document.createElement('div');
+        modal.className = 'bg-white rounded-2xl shadow-2xl max-w-md w-full transform scale-95 opacity-0 transition-all duration-300';
+
+        modal.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">${title}</h3>
+                </div>
+                <p class="text-gray-600 mb-6 leading-relaxed">${message}</p>
+                <div class="flex justify-end space-x-3">
+                    <button class="cancel-btn px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium">
+                        ${cancelText}
+                    </button>
+                    <button class="confirm-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                        ${confirmText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+
+        setTimeout(() => {
+            modal.classList.remove('scale-95', 'opacity-0');
+            modal.classList.add('scale-100', 'opacity-100');
+        }, 100);
+
+        const confirmBtn = modal.querySelector('.confirm-btn');
+        const cancelBtn = modal.querySelector('.cancel-btn');
+
+        function cleanup() {
+            modal.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                if (backdrop.parentNode) {
+                    backdrop.parentNode.removeChild(backdrop);
+                }
+            }, 300);
+        }
+
+        confirmBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(true);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            cleanup();
+            resolve(false);
+        });
+
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) {
+                cleanup();
+                resolve(false);
+            }
+        });
+
+        confirmBtn.focus();
+    });
+}
 </script>
 @endsection

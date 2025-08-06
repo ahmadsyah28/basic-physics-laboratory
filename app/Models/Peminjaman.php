@@ -14,12 +14,16 @@ class Peminjaman extends Model
     protected $table = 'peminjaman';
 
     const STATUS_PENDING = 'PENDING';
-    const STATUS_PROCESSING = 'PROCESSING';
+    const STATUS_APPROVED = 'APPROVED';
+    const STATUS_ACTIVE = 'ACTIVE';
     const STATUS_COMPLETED = 'COMPLETED';
     const STATUS_CANCELLED = 'CANCELLED';
 
     protected $fillable = [
         'namaPeminjam',
+        'student_id',
+        'email',
+        'instansi',
         'is_mahasiswa_usk',
         'noHp',
         'tujuanPeminjaman',
@@ -66,11 +70,36 @@ class Peminjaman extends Model
     {
         return match($this->status) {
             self::STATUS_PENDING => 'Menunggu Persetujuan',
-            self::STATUS_PROCESSING => 'Sedang Dipinjam',
+            self::STATUS_APPROVED => 'Disetujui',
+            self::STATUS_ACTIVE => 'Sedang Dipinjam',
             self::STATUS_COMPLETED => 'Selesai',
             self::STATUS_CANCELLED => 'Dibatalkan',
             default => 'Unknown'
         };
+    }
+
+    /**
+     * Get status text (alias for status name)
+     */
+    public function getStatusTextAttribute()
+    {
+        return $this->status_name;
+    }
+
+    /**
+     * Get formatted start date
+     */
+    public function getFormattedStartDateAttribute()
+    {
+        return $this->tanggal_pinjam ? $this->tanggal_pinjam->format('d M Y') : '-';
+    }
+
+    /**
+     * Get formatted end date
+     */
+    public function getFormattedEndDateAttribute()
+    {
+        return $this->tanggal_pengembalian ? $this->tanggal_pengembalian->format('d M Y') : '-';
     }
 
     /**
@@ -80,10 +109,41 @@ class Peminjaman extends Model
     {
         return match($this->status) {
             self::STATUS_PENDING => 'yellow',
-            self::STATUS_PROCESSING => 'blue',
+            self::STATUS_APPROVED => 'green',
+            self::STATUS_ACTIVE => 'blue',
             self::STATUS_COMPLETED => 'green',
             self::STATUS_CANCELLED => 'red',
             default => 'gray'
+        };
+    }
+
+    /**
+     * Get status badge color class
+     */
+    public function getStatusBadgeColorAttribute()
+    {
+        return match($this->status) {
+            self::STATUS_PENDING => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            self::STATUS_APPROVED => 'bg-green-100 text-green-800 border-green-200',
+            self::STATUS_ACTIVE => 'bg-blue-100 text-blue-800 border-blue-200',
+            self::STATUS_COMPLETED => 'bg-purple-100 text-purple-800 border-purple-200',
+            self::STATUS_CANCELLED => 'bg-red-100 text-red-800 border-red-200',
+            default => 'bg-gray-100 text-gray-800 border-gray-200'
+        };
+    }
+
+    /**
+     * Get progress percentage for tracking
+     */
+    public function getProgressPercentageAttribute()
+    {
+        return match($this->status) {
+            self::STATUS_PENDING => 25,
+            self::STATUS_APPROVED => 50,
+            self::STATUS_ACTIVE => 75,
+            self::STATUS_COMPLETED => 100,
+            self::STATUS_CANCELLED => 0,
+            default => 0
         };
     }
 
@@ -92,7 +152,7 @@ class Peminjaman extends Model
      */
     public function getIsOverdueAttribute()
     {
-        if ($this->status === self::STATUS_PROCESSING) {
+        if ($this->status === self::STATUS_ACTIVE) {
             return Carbon::now()->greaterThan($this->tanggal_pengembalian);
         }
         return false;
@@ -103,7 +163,7 @@ class Peminjaman extends Model
      */
     public function getDaysUntilReturnAttribute()
     {
-        if ($this->status === self::STATUS_PROCESSING) {
+        if ($this->status === self::STATUS_ACTIVE) {
             return Carbon::now()->diffInDays($this->tanggal_pengembalian, false);
         }
         return null;
@@ -115,6 +175,14 @@ class Peminjaman extends Model
     public function generateReferenceNumber()
     {
         return 'PJM-' . $this->created_at->format('Ymd') . '-' . str_pad(substr($this->id, 0, 4), 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Get reference number
+     */
+    public function getReferenceNumberAttribute()
+    {
+        return $this->generateReferenceNumber();
     }
 
     /**
@@ -132,7 +200,8 @@ class Peminjaman extends Model
     {
         return match($this->status) {
             'PENDING' => 'clock',
-            'PROCESSING' => 'hand-holding',
+            'APPROVED' => 'check-circle',
+            'ACTIVE' => 'hand-holding',
             'COMPLETED' => 'check-circle',
             'CANCELLED' => 'times-circle',
             default => 'question-circle'
@@ -189,7 +258,7 @@ class Peminjaman extends Model
      */
     public function canBeApproved()
     {
-        return $this->status === 'PENDING';
+        return $this->status === self::STATUS_PENDING;
     }
 
     /**
@@ -197,7 +266,7 @@ class Peminjaman extends Model
      */
     public function canBeCompleted()
     {
-        return $this->status === 'PROCESSING';
+        return $this->status === self::STATUS_ACTIVE;
     }
 
     /**
@@ -205,7 +274,7 @@ class Peminjaman extends Model
      */
     public function canBeCancelled()
     {
-        return in_array($this->status, ['PENDING', 'PROCESSING']);
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_ACTIVE]);
     }
 
     /**
@@ -230,10 +299,17 @@ class Peminjaman extends Model
     public function approve()
     {
         if ($this->status === self::STATUS_PENDING) {
-            $this->status = self::STATUS_PROCESSING;
+            // Check equipment availability first
+            foreach ($this->items as $item) {
+                if ($item->alat->jumlah_tersedia < $item->jumlah) {
+                    return false; // Not enough stock
+                }
+            }
+
+            $this->status = self::STATUS_APPROVED;
             $this->save();
 
-            // Update stock for each item
+            // Reserve equipment (update stock)
             foreach ($this->items as $item) {
                 $item->alat->pinjam($item->jumlah);
             }
@@ -244,11 +320,24 @@ class Peminjaman extends Model
     }
 
     /**
+     * Mark as active (equipment taken)
+     */
+    public function markAsActive()
+    {
+        if ($this->status === self::STATUS_APPROVED) {
+            $this->status = self::STATUS_ACTIVE;
+            $this->save();
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Complete the loan (return items)
      */
     public function complete($itemConditions = [])
     {
-        if ($this->status === self::STATUS_PROCESSING) {
+        if ($this->status === self::STATUS_ACTIVE) {
             $this->status = self::STATUS_COMPLETED;
             $this->kondisi_pengembalian = json_encode($itemConditions);
             $this->save();
@@ -269,13 +358,13 @@ class Peminjaman extends Model
      */
     public function cancel($reason = null)
     {
-        if (in_array($this->status, [self::STATUS_PENDING, self::STATUS_PROCESSING])) {
+        if (in_array($this->status, [self::STATUS_PENDING, self::STATUS_APPROVED, self::STATUS_ACTIVE])) {
             $oldStatus = $this->status;
             $this->status = self::STATUS_CANCELLED;
             $this->save();
 
-            // If was processing, return stock
-            if ($oldStatus === self::STATUS_PROCESSING) {
+            // If was approved or active, return stock
+            if (in_array($oldStatus, [self::STATUS_APPROVED, self::STATUS_ACTIVE])) {
                 foreach ($this->items as $item) {
                     $item->alat->kembalikan($item->jumlah);
                 }
@@ -315,7 +404,7 @@ class Peminjaman extends Model
      */
     public function scopeOverdue($query)
     {
-        return $query->where('status', 'PROCESSING')
+        return $query->where('status', self::STATUS_ACTIVE)
                      ->where('tanggal_pengembalian', '<', now());
     }
 
@@ -324,7 +413,7 @@ class Peminjaman extends Model
      */
     public function scopeDueSoon($query)
     {
-        return $query->where('status', 'PROCESSING')
+        return $query->where('status', self::STATUS_ACTIVE)
                      ->whereBetween('tanggal_pengembalian', [
                          now(),
                          now()->addDays(2)
@@ -361,10 +450,10 @@ class Peminjaman extends Model
             return false;
         }
 
-        // Check for overlapping bookings in pending and processing status
+        // Check for overlapping bookings in approved and active status
         $query = PeminjamanItem::where('alat_id', $equipmentId)
             ->whereHas('peminjaman', function($q) use ($startDate, $endDate, $excludePeminjamanId) {
-                $q->whereIn('status', ['PENDING', 'PROCESSING']);
+                $q->whereIn('status', [self::STATUS_APPROVED, self::STATUS_ACTIVE]);
 
                 if ($excludePeminjamanId) {
                     $q->where('id', '!=', $excludePeminjamanId);
@@ -405,8 +494,8 @@ class Peminjaman extends Model
 
         // When peminjaman is being deleted, make sure to clean up properly
         static::deleting(function ($peminjaman) {
-            // If was processing, return stock
-            if ($peminjaman->status === self::STATUS_PROCESSING) {
+            // If was approved or active, return stock
+            if (in_array($peminjaman->status, [self::STATUS_APPROVED, self::STATUS_ACTIVE])) {
                 foreach ($peminjaman->items as $item) {
                     $item->alat->kembalikan($item->jumlah);
                 }

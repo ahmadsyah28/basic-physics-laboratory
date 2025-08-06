@@ -15,13 +15,16 @@ return new class extends Migration
         Schema::create('peminjaman', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('namaPeminjam');
-            $table->boolean('is_mahasiswa_usk')->default(true); // default sesuai konteks umum
+            $table->string('student_id')->nullable();
+            $table->string('email')->nullable();
+            $table->string('instansi')->nullable();
+            $table->boolean('is_mahasiswa_usk')->default(true);
             $table->string('noHp');
             $table->string('tujuanPeminjaman')->nullable();
             $table->dateTime('tanggal_pinjam')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->dateTime('tanggal_pengembalian');
-            $table->string('kondisi_pengembalian')->nullable();
-            $table->enum('status', ['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED'])->default('PENDING');
+            $table->text('kondisi_pengembalian')->nullable(); // Changed to TEXT to store JSON
+            $table->enum('status', ['PENDING', 'APPROVED', 'ACTIVE', 'COMPLETED', 'CANCELLED'])->default('PENDING');
             $table->timestamps();
 
             // Indexes untuk optimasi query
@@ -29,6 +32,8 @@ return new class extends Migration
             $table->index('tanggal_pinjam');
             $table->index('tanggal_pengembalian');
             $table->index('is_mahasiswa_usk');
+            $table->index('student_id');
+            $table->index('email');
         });
     }
 

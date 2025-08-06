@@ -52,13 +52,26 @@ Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles
 | Services Routes
 |--------------------------------------------------------------------------
 */
-// Services - Equipment Loan
+// Services - Equipment Loan (Updated with tracking)
 Route::prefix('services/equipment-loan')->name('equipment.')->group(function () {
     Route::get('/', [EquipmentLoanController::class, 'index'])->name('loan');
     Route::get('/{id}', [EquipmentLoanController::class, 'show'])->name('detail');
     Route::post('/request', [EquipmentLoanController::class, 'requestLoan'])->name('request');
     Route::get('/availability/check', [EquipmentLoanController::class, 'checkAvailability'])->name('check-availability');
     Route::get('/history', [EquipmentLoanController::class, 'getLoanHistory'])->name('history');
+});
+
+// Equipment Tracking Routes (Public Access)
+Route::prefix('equipment')->name('equipment.')->group(function () {
+    // Track loan status (public access)
+    Route::get('/track/{id}', [EquipmentLoanController::class, 'track'])
+        ->name('track')
+        ->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
+    // Get loan data (for API or AJAX)
+    Route::get('/loan-data/{id}', [EquipmentLoanController::class, 'getLoanData'])
+        ->name('loan-data')
+        ->where('id', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
 });
 
 // Services - Visit Scheduling (Updated with new features)
@@ -153,14 +166,18 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
         Route::get('/calendar/data', [AdminScheduleController::class, 'getCalendarData'])->name('calendar-data');
     });
 
-    // Peminjaman Management
+    // Peminjaman Management (UPDATED - Fixed routes)
     Route::prefix('peminjaman')->name('peminjaman.')->group(function () {
         Route::get('/', [AdminPeminjamanController::class, 'index'])->name('index');
         Route::get('/{peminjaman}', [AdminPeminjamanController::class, 'show'])->name('show');
         Route::put('/{peminjaman}/status', [AdminPeminjamanController::class, 'updateStatus'])->name('update-status');
         Route::delete('/{peminjaman}', [AdminPeminjamanController::class, 'destroy'])->name('destroy');
-        Route::get('/export/csv', [AdminPeminjamanController::class, 'export'])->name('export');
+
+        // Export dan Bulk Operations (FIXED)
+        Route::get('/export', [AdminPeminjamanController::class, 'export'])->name('export');
         Route::post('/bulk-update', [AdminPeminjamanController::class, 'bulkUpdateStatus'])->name('bulk-update');
+
+        // Dashboard data untuk statistik
         Route::get('/dashboard/data', [AdminPeminjamanController::class, 'getDashboardData'])->name('dashboard-data');
     });
 

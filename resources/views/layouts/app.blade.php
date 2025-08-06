@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Laboratorium Fisika Dasar')</title>
     <meta name="description" content="Laboratorium Fisika Dasar - Fasilitas unggulan untuk penelitian dan pendidikan fisika dengan teknologi terdepan">
 

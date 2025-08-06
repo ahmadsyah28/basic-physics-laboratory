@@ -16,8 +16,9 @@
         @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
     }
     .status-PENDING { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
-    .status-PROCESSING { @apply bg-blue-100 text-blue-800 border border-blue-200; }
-    .status-COMPLETED { @apply bg-green-100 text-green-800 border border-green-200; }
+    .status-APPROVED { @apply bg-green-100 text-green-800 border border-green-200; }
+    .status-ACTIVE { @apply bg-blue-100 text-blue-800 border border-blue-200; }
+    .status-COMPLETED { @apply bg-purple-100 text-purple-800 border border-purple-200; }
     .status-CANCELLED { @apply bg-red-100 text-red-800 border border-red-200; }
 
     .priority-high { @apply bg-red-50 border-l-4 border-red-500; }
@@ -53,7 +54,7 @@
                     <div class="text-red-200 text-sm mt-1">
                         <i class="fas fa-exclamation-triangle mr-1"></i>Terlambat {{ abs($peminjaman->days_until_return) }} hari
                     </div>
-                @elseif($peminjaman->status === 'PROCESSING' && $peminjaman->days_until_return <= 2)
+                @elseif($peminjaman->status === 'ACTIVE' && $peminjaman->days_until_return <= 2)
                     <div class="text-yellow-200 text-sm mt-1">
                         <i class="fas fa-clock mr-1"></i>Jatuh tempo {{ $peminjaman->days_until_return }} hari lagi
                     </div>
@@ -160,6 +161,84 @@
                 </div>
             </div>
             @endif
+            <!-- WhatsApp Communication Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fab fa-whatsapp text-green-600 mr-3"></i>
+                Komunikasi WhatsApp
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Send Update to Borrower -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-900 mb-2">Kirim Update ke Peminjam</h4>
+                    <p class="text-sm text-gray-600 mb-3">Kirim update status peminjaman langsung ke WhatsApp peminjam</p>
+
+                    <div class="flex flex-wrap gap-2">
+                        @if($peminjaman->status === 'PENDING')
+                        <button onclick="sendStatusUpdate('approved')"
+                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Kirim Persetujuan
+                        </button>
+                        <button onclick="sendStatusUpdate('rejected')"
+                                class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Kirim Penolakan
+                        </button>
+                        @endif
+
+                        @if($peminjaman->status === 'APPROVED')
+                        <button onclick="sendStatusUpdate('pickup')"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Siap Diambil
+                        </button>
+                        @endif
+
+                        @if($peminjaman->status === 'ACTIVE')
+                        <button onclick="sendStatusUpdate('reminder')"
+                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Kirim Pengingat
+                        </button>
+                        @endif
+
+                        @if($peminjaman->status === 'COMPLETED')
+                        <button onclick="sendStatusUpdate('completed')"
+                                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Terima Kasih
+                        </button>
+                        @endif
+
+                        <button onclick="sendCustomMessage()"
+                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            Pesan Custom
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tracking Link -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-900 mb-2">Link Tracking</h4>
+                    <p class="text-sm text-gray-600 mb-2">Link untuk peminjam memantau status peminjaman:</p>
+                    <div class="flex items-center space-x-2">
+                        <input type="text"
+                               value="{{ route('equipment.track', $peminjaman->id) }}"
+                               readonly
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm">
+                        <button onclick="copyToClipboard('{{ route('equipment.track', $peminjaman->id) }}')"
+                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-copy mr-2"></i>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
         </div>
 
         <!-- Sidebar -->
@@ -183,7 +262,7 @@
                             {{ $peminjaman->tanggal_pinjam->diffInDays($peminjaman->tanggal_pengembalian) + 1 }} hari
                         </span>
                     </div>
-                    @if($peminjaman->status === 'PROCESSING')
+                    @if($peminjaman->status === 'ACTIVE')
                     <div class="flex justify-between items-center">
                         <span class="text-gray-600">Sisa Waktu:</span>
                         <span class="font-semibold {{ $peminjaman->is_overdue ? 'text-red-600' : ($peminjaman->days_until_return <= 2 ? 'text-yellow-600' : 'text-green-600') }}">
@@ -243,15 +322,22 @@
 
                 <div class="space-y-3">
                     @if($peminjaman->canBeApproved())
-                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'PROCESSING')"
+                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'APPROVED')"
                             class="w-full px-4 py-3 bg-green-600 text-white text-center rounded-lg hover:bg-green-700 transition">
                         <i class="fas fa-check mr-2"></i>Setujui Peminjaman
                     </button>
                     @endif
 
+                    @if($peminjaman->status === 'APPROVED')
+                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'ACTIVE')"
+                            class="w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-hand-holding mr-2"></i>Tandai Sudah Diambil
+                    </button>
+                    @endif
+
                     @if($peminjaman->canBeCompleted())
                     <button onclick="showCompleteModal('{{ $peminjaman->id }}')"
-                            class="w-full px-4 py-3 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition">
+                            class="w-full px-4 py-3 bg-purple-600 text-white text-center rounded-lg hover:bg-purple-700 transition">
                         <i class="fas fa-check-double mr-2"></i>Selesaikan Peminjaman
                     </button>
                     @endif
@@ -401,6 +487,49 @@
         </div>
     </div>
 </div>
+<!-- Custom Message Modal -->
+<div id="customMessageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-md w-full">
+        <div class="flex justify-between items-center p-4 border-b">
+            <h3 class="text-lg font-medium">Kirim Pesan Custom</h3>
+            <button onclick="closeCustomMessage()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-4">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kepada:</label>
+                <div class="p-2 bg-gray-50 rounded-lg text-sm">
+                    <strong>{{ $peminjaman->namaPeminjam }}</strong> - {{ $peminjaman->noHp }}
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="customMessageText" class="block text-sm font-medium text-gray-700 mb-2">Pesan:</label>
+                <textarea id="customMessageText"
+                          rows="4"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Tulis pesan untuk peminjam..."></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="flex items-center">
+                    <input type="checkbox" id="includeTrackingLink" checked class="mr-2">
+                    <span class="text-sm text-gray-700">Sertakan link tracking</span>
+                </label>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeCustomMessage()"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg">
+                    Batal
+                </button>
+                <button onclick="sendMessage()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                    <i class="fab fa-whatsapp mr-2"></i>
+                    Kirim
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -408,8 +537,11 @@
 function updateStatus(peminjamanId, status) {
     let message = '';
     switch(status) {
-        case 'PROCESSING':
+        case 'APPROVED':
             message = 'Apakah Anda yakin ingin menyetujui peminjaman ini?';
+            break;
+        case 'ACTIVE':
+            message = 'Apakah Anda yakin ingin menandai peminjaman ini sebagai sudah diambil?';
             break;
         case 'CANCELLED':
             message = 'Apakah Anda yakin ingin membatalkan peminjaman ini?';
@@ -502,6 +634,176 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeCompleteModal();
         closeCancelModal();
+    }
+});
+
+// WhatsApp Communication Functions
+function sendStatusUpdate(type) {
+    const borrowerPhone = '{{ $peminjaman->noHp }}';
+    const borrowerName = '{{ $peminjaman->namaPeminjam }}';
+    const trackingUrl = '{{ route("equipment.track", $peminjaman->id) }}';
+    const loanDate = '{{ $peminjaman->tanggal_pinjam->format("d M Y") }}';
+    const returnDate = '{{ $peminjaman->tanggal_pengembalian->format("d M Y H:i") }}';
+    const equipmentList = getEquipmentListText();
+
+    let message = '';
+
+    switch(type) {
+        case 'approved':
+            message = `Halo ${borrowerName},\n\n✅ *PEMINJAMAN ALAT DISETUJUI*\n\nPeminjaman alat Anda di Laboratorium Fisika Dasar telah disetujui!\n\n📅 Periode Peminjaman:\n• Mulai: ${loanDate}\n• Berakhir: ${returnDate}\n\n🔧 Alat yang Dipinjam:\n${equipmentList}\n\n📋 *PENTING - Silakan ambil alat dengan membawa:*\n• Kartu identitas (KTM/KTP)\n• Screenshot pesan ini\n• Mengikuti protokol keselamatan lab\n\n⚠️ Harap ambil alat sesuai jadwal yang telah ditentukan.\n\n🔗 Pantau status: ${trackingUrl}\n\nTerima kasih!\nLab Fisika Dasar`;
+            break;
+
+        case 'rejected':
+            message = `Halo ${borrowerName},\n\n❌ *PEMINJAMAN TIDAK DAPAT DIPROSES*\n\nMohon maaf, pengajuan peminjaman alat Anda tidak dapat kami proses saat ini.\n\n🔧 Alat yang Diminta:\n${equipmentList}\n\n💡 *Kemungkinan penyebab:*\n• Alat tidak tersedia pada periode tersebut\n• Kapasitas peminjaman penuh\n• Data pengajuan tidak lengkap\n\nSilakan hubungi admin untuk informasi lebih lanjut atau ajukan ulang dengan jadwal yang berbeda.\n\n🔗 Status pengajuan: ${trackingUrl}\n\nTerima kasih atas pengertiannya.\nLab Fisika Dasar`;
+            break;
+
+        case 'pickup':
+            message = `Halo ${borrowerName},\n\n📦 *ALAT SIAP DIAMBIL*\n\nAlat laboratorium yang Anda pinjam sudah siap untuk diambil!\n\n🔧 Alat yang Siap Diambil:\n${equipmentList}\n\n📍 *Lokasi:* Lab Fisika Dasar - Gedung Akademik\n⏰ *Jam Operasional:* 08:00 - 16:00 WIB\n\n📋 *Jangan lupa bawa:*\n• Kartu identitas (KTM/KTP)\n• Screenshot pesan ini\n\n📅 *Batas Pengembalian:* ${returnDate}\n\n🔗 Pantau status: ${trackingUrl}\n\nTerima kasih!\nLab Fisika Dasar`;
+            break;
+
+        case 'reminder':
+            const daysLeft = {{ $peminjaman->days_until_return ?? 0 }};
+            const urgencyLevel = daysLeft <= 0 ? 'TERLAMBAT' : (daysLeft == 1 ? 'HARI INI' : `H-${daysLeft}`);
+            const urgencyIcon = daysLeft <= 0 ? '🚨' : (daysLeft <= 1 ? '⚠️' : '⏰');
+
+            message = `Halo ${borrowerName},\n\n${urgencyIcon} *PENGINGAT PENGEMBALIAN ALAT - ${urgencyLevel}*\n\n`;
+
+            if (daysLeft <= 0) {
+                message += `‼️ Peminjaman Anda sudah TERLAMBAT ${Math.abs(daysLeft)} hari!\n\n`;
+            } else {
+                message += `Batas waktu pengembalian alat tinggal ${daysLeft} hari lagi.\n\n`;
+            }
+
+            message += `🔧 Alat yang Harus Dikembalikan:\n${equipmentList}\n\n📅 *Batas Pengembalian:* ${returnDate}\n\n📍 *Segera kembalikan ke:*\nLab Fisika Dasar - Gedung Akademik\nJam operasional: 08:00 - 16:00 WIB\n\n⚠️ Keterlambatan dapat mempengaruhi peminjaman selanjutnya.\n\n🔗 Status: ${trackingUrl}\n\nTerima kasih atas perhatiannya!\nLab Fisika Dasar`;
+            break;
+
+        case 'completed':
+            message = `Halo ${borrowerName},\n\n✅ *PEMINJAMAN SELESAI*\n\nTerima kasih! Peminjaman alat Anda telah selesai:\n\n🔧 Alat yang Dikembalikan:\n${equipmentList}\n\n📊 *Status:* Lengkap dan Selesai\n\n🙏 Terima kasih telah:\n• Menggunakan fasilitas lab dengan baik\n• Mengembalikan alat tepat waktu\n• Menjaga kondisi alat\n\nKami berharap dapat melayani Anda kembali di masa mendatang.\n\n🔗 Riwayat: ${trackingUrl}\n\nSalam,\nLab Fisika Dasar`;
+            break;
+    }
+
+    // Format phone number and open WhatsApp
+    const formattedPhone = borrowerPhone.replace(/^0/, '62');
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+
+    // Show success message
+    showAlert('success', 'WhatsApp terbuka! Pesan siap dikirim.');
+}
+
+function sendCustomMessage() {
+    document.getElementById('customMessageModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCustomMessage() {
+    document.getElementById('customMessageModal').classList.add('hidden');
+    document.getElementById('customMessageText').value = '';
+    document.body.style.overflow = 'auto';
+}
+
+function sendMessage() {
+    const message = document.getElementById('customMessageText').value;
+    if (!message.trim()) {
+        alert('Silakan tulis pesan terlebih dahulu');
+        return;
+    }
+
+    const borrowerPhone = '{{ $peminjaman->noHp }}';
+    const borrowerName = '{{ $peminjaman->namaPeminjam }}';
+    const includeTracking = document.getElementById('includeTrackingLink').checked;
+    const trackingUrl = '{{ route("equipment.track", $peminjaman->id) }}';
+
+    let fullMessage = `Halo ${borrowerName},\n\n${message}`;
+
+    if (includeTracking) {
+        fullMessage += `\n\n🔗 Pantau status peminjaman: ${trackingUrl}`;
+    }
+
+    fullMessage += `\n\nSalam,\nAdmin Laboratorium Fisika Dasar`;
+
+    const formattedPhone = borrowerPhone.replace(/^0/, '62');
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(fullMessage)}`;
+    window.open(whatsappUrl, '_blank');
+
+    closeCustomMessage();
+    showAlert('success', 'WhatsApp terbuka! Pesan custom siap dikirim.');
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showAlert('success', 'Link berhasil disalin ke clipboard!');
+    }).catch(err => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showAlert('success', 'Link berhasil disalin!');
+    });
+}
+
+function getEquipmentListText() {
+    const equipmentItems = [
+        @foreach($peminjaman->items as $item)
+        '• {{ $item->alat->nama }} ({{ $item->jumlah }} unit)',
+        @endforeach
+    ];
+    return equipmentItems.join('\n');
+}
+
+// Alert function
+function showAlert(type, message) {
+    const alertClass = {
+        'success': 'bg-green-500',
+        'error': 'bg-red-500',
+        'info': 'bg-blue-500',
+        'warning': 'bg-yellow-500'
+    }[type] || 'bg-gray-500';
+
+    const iconClass = {
+        'success': 'fa-check',
+        'error': 'fa-exclamation-triangle',
+        'info': 'fa-info-circle',
+        'warning': 'fa-exclamation-triangle'
+    }[type] || 'fa-info';
+
+    const alertElement = document.createElement('div');
+    alertElement.className = `fixed top-4 right-4 ${alertClass} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-x-full opacity-0 transition-all duration-300`;
+    alertElement.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${iconClass} mr-2"></i>
+            ${message}
+        </div>
+    `;
+
+    document.body.appendChild(alertElement);
+
+    // Animate in
+    setTimeout(() => {
+        alertElement.classList.remove('translate-x-full', 'opacity-0');
+    }, 100);
+
+    // Animate out and remove
+    setTimeout(() => {
+        alertElement.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => alertElement.remove(), 300);
+    }, 3000);
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'customMessageModal') {
+        closeCustomMessage();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeCustomMessage();
     }
 });
 </script>

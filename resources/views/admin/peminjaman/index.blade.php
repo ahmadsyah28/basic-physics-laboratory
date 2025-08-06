@@ -9,8 +9,9 @@
         @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
     }
     .status-PENDING { @apply bg-yellow-100 text-yellow-800 border border-yellow-200; }
-    .status-PROCESSING { @apply bg-blue-100 text-blue-800 border border-blue-200; }
-    .status-COMPLETED { @apply bg-green-100 text-green-800 border border-green-200; }
+    .status-APPROVED { @apply bg-green-100 text-green-800 border border-green-200; }
+    .status-ACTIVE { @apply bg-blue-100 text-blue-800 border border-blue-200; }
+    .status-COMPLETED { @apply bg-purple-100 text-purple-800 border border-purple-200; }
     .status-CANCELLED { @apply bg-red-100 text-red-800 border border-red-200; }
 
     .borrower-usk { @apply bg-blue-100 text-blue-800 border border-blue-200; }
@@ -67,11 +68,23 @@
 
         <div class="stats-card bg-white rounded-lg shadow-md p-4 border border-gray-100">
             <div class="flex items-center">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-check text-green-600"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-900">{{ $statistics['approved'] }}</div>
+                    <div class="text-sm text-gray-600">Disetujui</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-card bg-white rounded-lg shadow-md p-4 border border-gray-100">
+            <div class="flex items-center">
                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                     <i class="fas fa-hand-holding text-blue-600"></i>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-gray-900">{{ $statistics['processing'] }}</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ $statistics['active'] }}</div>
                     <div class="text-sm text-gray-600">Dipinjam</div>
                 </div>
             </div>
@@ -79,8 +92,8 @@
 
         <div class="stats-card bg-white rounded-lg shadow-md p-4 border border-gray-100">
             <div class="flex items-center">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                    <i class="fas fa-check-circle text-green-600"></i>
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-check-circle text-purple-600"></i>
                 </div>
                 <div>
                     <div class="text-2xl font-bold text-gray-900">{{ $statistics['completed'] }}</div>
@@ -97,18 +110,6 @@
                 <div>
                     <div class="text-2xl font-bold text-gray-900">{{ $statistics['overdue'] }}</div>
                     <div class="text-sm text-gray-600">Terlambat</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="stats-card bg-white rounded-lg shadow-md p-4 border border-gray-100">
-            <div class="flex items-center">
-                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                    <i class="fas fa-calendar-times text-orange-600"></i>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold text-gray-900">{{ $statistics['due_soon'] }}</div>
-                    <div class="text-sm text-gray-600">Jatuh Tempo</div>
                 </div>
             </div>
         </div>
@@ -146,7 +147,8 @@
                     <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Semua Status</option>
                         <option value="PENDING" {{ request('status') === 'PENDING' ? 'selected' : '' }}>Menunggu</option>
-                        <option value="PROCESSING" {{ request('status') === 'PROCESSING' ? 'selected' : '' }}>Dipinjam</option>
+                        <option value="APPROVED" {{ request('status') === 'APPROVED' ? 'selected' : '' }}>Disetujui</option>
+                        <option value="ACTIVE" {{ request('status') === 'ACTIVE' ? 'selected' : '' }}>Dipinjam</option>
                         <option value="COMPLETED" {{ request('status') === 'COMPLETED' ? 'selected' : '' }}>Selesai</option>
                         <option value="CANCELLED" {{ request('status') === 'CANCELLED' ? 'selected' : '' }}>Dibatalkan</option>
                     </select>
@@ -208,7 +210,8 @@
             <div class="flex space-x-2">
                 <select id="bulk-status" class="px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     <option value="">Pilih Status</option>
-                    <option value="PROCESSING">Setujui</option>
+                    <option value="APPROVED">Setujui</option>
+                    <option value="ACTIVE">Tandai Diambil</option>
                     <option value="CANCELLED">Batalkan</option>
                 </select>
                 <button onclick="applyBulkAction()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
@@ -289,7 +292,7 @@
                                 <div class="text-xs text-red-600 font-medium mt-1">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>Terlambat {{ abs($peminjaman->days_until_return) }} hari
                                 </div>
-                            @elseif($peminjaman->status === 'PROCESSING' && $peminjaman->days_until_return <= 2)
+                            @elseif($peminjaman->status === 'ACTIVE' && $peminjaman->days_until_return <= 2)
                                 <div class="text-xs text-yellow-600 font-medium mt-1">
                                     <i class="fas fa-clock mr-1"></i>Jatuh tempo {{ $peminjaman->days_until_return }} hari
                                 </div>
@@ -322,16 +325,24 @@
                                 </a>
 
                                 @if($peminjaman->canBeApproved())
-                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'PROCESSING')"
+                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'APPROVED')"
                                         class="text-green-600 hover:text-green-900 transition"
                                         title="Setujui">
                                     <i class="fas fa-check"></i>
                                 </button>
                                 @endif
 
+                                @if($peminjaman->status === 'APPROVED')
+                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'ACTIVE')"
+                                        class="text-blue-600 hover:text-blue-900 transition"
+                                        title="Tandai Diambil">
+                                    <i class="fas fa-hand-holding"></i>
+                                </button>
+                                @endif
+
                                 @if($peminjaman->canBeCompleted())
                                 <button onclick="showCompleteModal('{{ $peminjaman->id }}')"
-                                        class="text-blue-600 hover:text-blue-900 transition"
+                                        class="text-purple-600 hover:text-purple-900 transition"
                                         title="Selesaikan">
                                     <i class="fas fa-check-double"></i>
                                 </button>
@@ -510,8 +521,11 @@ function applyBulkAction() {
 function updateStatus(peminjamanId, status) {
     let message = '';
     switch(status) {
-        case 'PROCESSING':
+        case 'APPROVED':
             message = 'Apakah Anda yakin ingin menyetujui peminjaman ini?';
+            break;
+        case 'ACTIVE':
+            message = 'Apakah Anda yakin ingin menandai peminjaman ini sebagai sudah diambil?';
             break;
         case 'CANCELLED':
             message = 'Apakah Anda yakin ingin membatalkan peminjaman ini?';
@@ -549,19 +563,17 @@ function updateStatus(peminjamanId, status) {
 }
 
 function showCompleteModal(peminjamanId) {
-    // Fetch peminjaman details and show modal
-    fetch(`/admin/peminjaman/${peminjamanId}`)
-        .then(response => response.text())
-        .then(html => {
-            // Parse the response to get equipment list
-            // This is a simplified version - you might want to create a separate API endpoint
-            document.getElementById('completeForm').action = `/admin/peminjaman/${peminjamanId}/status`;
-            document.getElementById('completeModal').classList.remove('hidden');
-        });
+    // Set the form action
+    document.getElementById('completeForm').action = `/admin/peminjaman/${peminjamanId}/status`;
+
+    // Show modal
+    document.getElementById('completeModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeCompleteModal() {
     document.getElementById('completeModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 function deletePeminjaman(peminjamanId) {
@@ -586,5 +598,19 @@ function deletePeminjaman(peminjamanId) {
         form.submit();
     }
 }
+
+// Close modals when clicking outside
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('bg-opacity-75')) {
+        closeCompleteModal();
+    }
+});
+
+// Close modals with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeCompleteModal();
+    }
+});
 </script>
 @endsection

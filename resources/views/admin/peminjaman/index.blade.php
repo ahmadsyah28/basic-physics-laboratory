@@ -251,13 +251,18 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @foreach($peminjamans as $peminjaman)
+                   @foreach($peminjamans as $peminjaman)
                     @php
-                        $priorityClass = match($peminjaman->getPriorityLevel()) {
-                            'high' => 'priority-high',
-                            'medium' => 'priority-medium',
-                            default => 'priority-low'
-                        };
+                        // Determine priority based on peminjaman status and dates, NOT equipment condition
+                        $priorityClass = 'priority-low';
+
+                        if ($peminjaman->is_overdue && $peminjaman->status === 'ACTIVE') {
+                            $priorityClass = 'priority-high';
+                        } elseif ($peminjaman->status === 'ACTIVE' && $peminjaman->days_until_return <= 2) {
+                            $priorityClass = 'priority-medium';
+                        } elseif ($peminjaman->status === 'PENDING') {
+                            $priorityClass = 'priority-medium';
+                        }
                     @endphp
                     <tr class="hover:bg-gray-50 {{ $priorityClass }}">
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -304,6 +309,49 @@
                                 <div class="text-xs text-gray-500 mt-1 max-w-xs truncate">
                                     {{ $peminjaman->getEquipmentSummaryText() }}
                                 </div>
+
+                                <!-- Equipment Availability Status (only for PENDING/APPROVED status) -->
+                                @if(in_array($peminjaman->status, ['PENDING', 'APPROVED']))
+                                    @php
+                                        $unavailableItems = [];
+                                        $partiallyAvailableItems = [];
+
+                                        foreach($peminjaman->items as $item) {
+                                            $alat = $item->alat;
+                                            $needed = $item->jumlah;
+                                            $available = $alat->jumlah_tersedia;
+
+                                            if ($available == 0) {
+                                                $unavailableItems[] = $alat->nama;
+                                            } elseif ($available < $needed) {
+                                                $partiallyAvailableItems[] = "{$alat->nama} ({$available}/{$needed})";
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if(!empty($unavailableItems))
+                                        <div class="text-xs text-red-600 mt-1">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            Tidak tersedia: {{ implode(', ', array_slice($unavailableItems, 0, 2)) }}
+                                            @if(count($unavailableItems) > 2)
+                                                +{{ count($unavailableItems) - 2 }} lainnya
+                                            @endif
+                                        </div>
+                                    @elseif(!empty($partiallyAvailableItems))
+                                        <div class="text-xs text-yellow-600 mt-1">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            Terbatas: {{ implode(', ', array_slice($partiallyAvailableItems, 0, 2)) }}
+                                            @if(count($partiallyAvailableItems) > 2)
+                                                +{{ count($partiallyAvailableItems) - 2 }} lainnya
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="text-xs text-green-600 mt-1">
+                                            <i class="fas fa-check-circle mr-1"></i>Semua alat tersedia
+                                        </div>
+                                    @endif
+                                @endif
+
                                 @if($peminjaman->tujuanPeminjaman)
                                 <div class="text-xs text-gray-500 mt-1 max-w-xs truncate">
                                     <i class="fas fa-info-circle mr-1"></i>{{ $peminjaman->tujuanPeminjaman }}
@@ -317,57 +365,82 @@
                                 {{ $peminjaman->status_name }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div class="flex space-x-2">
-                                <a href="{{ route('admin.peminjaman.show', $peminjaman) }}"
-                                   class="text-blue-600 hover:text-blue-900 transition">
-                                    <i class="fas fa-eye"></i>
-                                </a>
+                            {{-- isi aksi --}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    <a href="{{ route('admin.peminjaman.show', $peminjaman) }}"
+                                    class="text-blue-600 hover:text-blue-900 transition">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
 
-                                @if($peminjaman->canBeApproved())
-                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'APPROVED')"
-                                        class="text-green-600 hover:text-green-900 transition"
-                                        title="Setujui">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                @endif
+                                    @if($peminjaman->canBeApproved())
+                                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'APPROVED')"
+                                            class="text-green-600 hover:text-green-900 transition"
+                                            title="Setujui">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    @endif
 
-                                @if($peminjaman->status === 'APPROVED')
-                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'ACTIVE')"
-                                        class="text-blue-600 hover:text-blue-900 transition"
-                                        title="Tandai Diambil">
-                                    <i class="fas fa-hand-holding"></i>
-                                </button>
-                                @endif
+                                    @if($peminjaman->status === 'APPROVED')
+                                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'ACTIVE')"
+                                            class="text-blue-600 hover:text-blue-900 transition"
+                                            title="Tandai Diambil">
+                                        <i class="fas fa-hand-holding"></i>
+                                    </button>
+                                    @endif
 
-                                @if($peminjaman->canBeCompleted())
-                                <button onclick="showCompleteModal('{{ $peminjaman->id }}')"
-                                        class="text-purple-600 hover:text-purple-900 transition"
-                                        title="Selesaikan">
-                                    <i class="fas fa-check-double"></i>
-                                </button>
-                                @endif
+                                    @if($peminjaman->canBeCompleted())
+                                    <button onclick="showCompleteModal('{{ $peminjaman->id }}')"
+                                            class="text-purple-600 hover:text-purple-900 transition"
+                                            title="Selesaikan">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    @endif
 
-                                @if($peminjaman->canBeCancelled())
-                                <button onclick="updateStatus('{{ $peminjaman->id }}', 'CANCELLED')"
-                                        class="text-red-600 hover:text-red-900 transition"
-                                        title="Batalkan">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                @endif
+                                    @if($peminjaman->canBeCancelled())
+                                    <button onclick="updateStatus('{{ $peminjaman->id }}', 'CANCELLED')"
+                                            class="text-red-600 hover:text-red-900 transition"
+                                            title="Batalkan">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    @endif
 
-                                @if(in_array($peminjaman->status, ['COMPLETED', 'CANCELLED']))
-                                <button onclick="deletePeminjaman('{{ $peminjaman->id }}')"
-                                        class="text-red-600 hover:text-red-900 transition"
-                                        title="Hapus">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
+                                    @if(in_array($peminjaman->status, ['COMPLETED', 'CANCELLED']))
+                                    <button onclick="deletePeminjaman('{{ $peminjaman->id }}')"
+                                            class="text-red-600 hover:text-red-900 transition"
+                                            title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
+                            <script>
+                            window.peminjamanItemsMap = window.peminjamanItemsMap || {};
+                            window.peminjamanItemsMap['{{ $peminjaman->id }}'] =
+                            {!! $peminjaman->items
+                                    ->map(function($it){
+                                        return [
+                                            'alat_id'          => $it->alat_id,
+                                            'nama'             => $it->alat->nama,
+                                            'kode'             => $it->alat->kode,
+                                            'nama_kategori'    => $it->alat->nama_kategori,
+                                            'deskripsi'        => $it->alat->deskripsi,
+                                            'jumlah'           => $it->jumlah,
+                                            'stok'             => $it->alat->stok,
+                                            'jumlah_tersedia'  => $it->alat->jumlah_tersedia,
+                                            'image_url'        => $it->alat->image_url ? asset('storage/'.$it->alat->image_url) : null,
+                                            'category_icon'    => method_exists($it->alat, 'getCategoryIcon') ? $it->alat->getCategoryIcon() : 'tools',
+                                        ];
+                                    })
+                                    ->values()
+                                    ->toJson(JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT)
+                            !!};
+                            </script>
+
+                        </tr>
+
+                        @endforeach
+                    </tbody>
             </table>
         </div>
 
@@ -387,41 +460,43 @@
     </div>
 </div>
 
-<!-- Complete Modal -->
+<!-- Complete Modal (verifikasi kondisi per alat) -->
 <div id="completeModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeCompleteModal()"></div>
-        <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Selesaikan Peminjaman</h3>
-                <button onclick="closeCompleteModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeCompleteModal()"></div>
+    <div class="inline-block w-full max-w-4xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-semibold text-gray-900">Selesaikan Peminjaman</h3>
+        <button onclick="closeCompleteModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
-            <form id="completeForm" method="POST">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="status" value="COMPLETED">
+      <p class="text-gray-600 mb-6">Tentukan kondisi dan jumlah setiap alat saat dikembalikan:</p>
 
-                <div id="equipment-conditions" class="space-y-4 mb-6">
-                    <!-- Equipment conditions will be populated by JavaScript -->
-                </div>
+      <form id="completeForm" method="POST">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="status" value="COMPLETED">
 
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeCompleteModal()"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
-                        Batal
-                    </button>
-                    <button type="submit"
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        <i class="fas fa-check mr-2"></i>Selesaikan
-                    </button>
-                </div>
-            </form>
+        <!-- Diisi dinamis oleh JS -->
+        <div id="conditionsContainer" class="space-y-6 mb-6"></div>
+
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeCompleteModal()"
+                  class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+            Batal
+          </button>
+          <button type="submit" id="completeSubmitBtn"
+                  class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
+            <i class="fas fa-check mr-2"></i>Selesaikan Peminjaman
+          </button>
         </div>
+      </form>
     </div>
+  </div>
 </div>
+
 @endsection
 
 @section('scripts')
@@ -562,14 +637,7 @@ function updateStatus(peminjamanId, status) {
     }
 }
 
-function showCompleteModal(peminjamanId) {
-    // Set the form action
-    document.getElementById('completeForm').action = `/admin/peminjaman/${peminjamanId}/status`;
 
-    // Show modal
-    document.getElementById('completeModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
 
 function closeCompleteModal() {
     document.getElementById('completeModal').classList.add('hidden');
@@ -612,5 +680,200 @@ document.addEventListener('keydown', function(e) {
         closeCompleteModal();
     }
 });
+
+/** ===============================
+ *  Modal verifikasi kondisi (Index)
+ *  =============================== */
+(function(){
+  let activeLoanId = null;
+
+  // BUKA modal + render form kondisi per alat
+  function showCompleteModal(peminjamanId) {
+    activeLoanId = peminjamanId;
+    const form = document.getElementById('completeForm');
+    const container = document.getElementById('conditionsContainer');
+    const btn = document.getElementById('completeSubmitBtn');
+    const modal = document.getElementById('completeModal');
+
+    if (!form || !container || !btn || !modal) return;
+
+    // set action endpoint (konsisten dengan halaman show)
+    form.action = `/admin/peminjaman/${peminjamanId}/status`;
+
+    // render kartu item
+    const items = (window.peminjamanItemsMap && window.peminjamanItemsMap[peminjamanId]) || [];
+    container.innerHTML = items.map(renderItemCard).join('');
+
+    // tampilkan modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // validasi awal
+    validateAllTotals();
+  }
+
+  // TUTUP modal
+  function closeCompleteModal() {
+    const modal = document.getElementById('completeModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  // Template kartu satu alat
+  function renderItemCard(item) {
+    const img = item.image_url
+      ? `<img src="${item.image_url}" alt="${escapeHtml(item.nama)}" class="w-full h-full object-cover">`
+      : `<div class="w-full h-full flex items-center justify-center">
+           <i class="fas fa-${item.category_icon || 'tools'} text-gray-400 text-xl"></i>
+         </div>`;
+
+    return `
+    <div class="border-2 border-gray-200 rounded-lg p-6 bg-gray-50">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-white rounded-lg overflow-hidden border">${img}</div>
+          <div>
+            <h4 class="font-semibold text-gray-900 text-lg">${escapeHtml(item.nama)}</h4>
+            <p class="text-sm text-gray-600">Kode: ${escapeHtml(item.kode || '-')}</p>
+            <p class="text-sm font-medium text-blue-600">Total dipinjam: ${item.jumlah} unit</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg p-4 border">
+        <h5 class="font-medium text-gray-800 mb-3">Kondisi Pengembalian:</h5>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- BAIK -->
+          <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
+              <div>
+                <div class="font-medium text-green-700">Kondisi Baik</div>
+                <div class="text-xs text-gray-600">Dapat digunakan kembali</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <label class="text-sm font-medium text-gray-700">Jumlah:</label>
+              <input type="number"
+                     name="item_conditions[${item.alat_id}][baik]"
+                     min="0" max="${item.jumlah}" value="${item.jumlah}"
+                     class="w-20 px-3 py-1 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                     oninput="updateConditionTotals(${item.alat_id}, ${item.jumlah})">
+              <span class="text-sm text-gray-500">unit</span>
+            </div>
+          </div>
+
+          <!-- RUSAK -->
+          <div class="border-2 border-red-200 rounded-lg p-4 bg-red-50">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3"></i>
+              <div>
+                <div class="font-medium text-red-700">Kondisi Rusak</div>
+                <div class="text-xs text-gray-600">Perlu perbaikan/penggantian</div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <label class="text-sm font-medium text-gray-700">Jumlah:</label>
+              <input type="number"
+                     name="item_conditions[${item.alat_id}][rusak]"
+                     min="0" max="${item.jumlah}" value="0"
+                     class="w-20 px-3 py-1 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                     oninput="updateConditionTotals(${item.alat_id}, ${item.jumlah})">
+              <span class="text-sm text-gray-500">unit</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3 p-2 bg-gray-100 rounded-md">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600">Total unit yang dikembalikan:</span>
+            <span id="total-${item.alat_id}" class="font-medium text-green-600">${item.jumlah}/${item.jumlah}</span>
+          </div>
+          <div id="error-${item.alat_id}" class="text-red-600 text-xs mt-1 hidden">
+            Total harus sama dengan ${item.jumlah} unit
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ===== Validasi per item & agregat =====
+  function updateConditionTotals(alatId, maxTotal) {
+    const baikInput = document.querySelector(`input[name="item_conditions[${alatId}][baik]"]`);
+    const rusakInput = document.querySelector(`input[name="item_conditions[${alatId}][rusak]"]`);
+    const totalDisplay = document.getElementById(`total-${alatId}`);
+    const errorDisplay = document.getElementById(`error-${alatId}`);
+    if (!baikInput || !rusakInput || !totalDisplay || !errorDisplay) return;
+
+    const baik = parseInt(baikInput.value) || 0;
+    const rusak = parseInt(rusakInput.value) || 0;
+    const total = baik + rusak;
+
+    totalDisplay.textContent = `${total}/${maxTotal}`;
+    totalDisplay.className = total === maxTotal ? 'font-medium text-green-600' : 'font-medium text-red-600';
+
+    if (total !== maxTotal) {
+      errorDisplay.classList.remove('hidden');
+      errorDisplay.textContent = total > maxTotal
+        ? `Total tidak boleh melebihi ${maxTotal} unit`
+        : `Total harus sama dengan ${maxTotal} unit`;
+    } else {
+      errorDisplay.classList.add('hidden');
+    }
+
+    validateAllTotals();
+  }
+
+  function validateAllTotals() {
+    const btn = document.getElementById('completeSubmitBtn');
+    if (!btn || !activeLoanId) return;
+
+    const items = (window.peminjamanItemsMap && window.peminjamanItemsMap[activeLoanId]) || [];
+    let ok = true;
+    for (const item of items) {
+      const baik = parseInt(document.querySelector(`input[name="item_conditions[${item.alat_id}][baik]"]`)?.value) || 0;
+      const rusak = parseInt(document.querySelector(`input[name="item_conditions[${item.alat_id}][rusak]"]`)?.value) || 0;
+      if (baik + rusak !== item.jumlah) { ok = false; break; }
+    }
+
+    btn.disabled = !ok;
+    btn.className = ok
+      ? 'px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center'
+      : 'px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center';
+  }
+
+  // ===== Util kecil =====
+  function escapeHtml(s){ return (s||'').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+
+  // ===== Expose ke global (dipakai onclick tombol) =====
+  window.showCompleteModal = showCompleteModal;
+  window.closeCompleteModal = closeCompleteModal;
+  window.updateConditionTotals = updateConditionTotals;
+  window.validateAllTotals = validateAllTotals;
+
+  // Tutup modal via backdrop/Escape (selaras dengan pola sebelumnya)
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('bg-opacity-75')) closeCompleteModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCompleteModal();
+  });
+
+  // Cegah submit jika invalid
+  document.addEventListener('submit', function(e){
+    if (e.target && e.target.id === 'completeForm') {
+      const btn = document.getElementById('completeSubmitBtn');
+      if (btn && btn.disabled) {
+        e.preventDefault();
+        alert('Mohon periksa kembali total kondisi setiap alat');
+      }
+    }
+  });
+})();
 </script>
 @endsection

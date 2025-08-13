@@ -24,7 +24,7 @@
             <!-- Desktop Navigation -->
             <div class="hidden md:block">
                 <div class="flex items-center space-x-8">
-                    <a href="{{ route('home') }}#visi-misi" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Beranda</a>
+                    <a href="{{ route('home') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Beranda</a>
                     <a href="{{ route('staff') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Staf dan Tenaga Ahli</a>
                     <a href="{{ route('articles.index') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Artikel</a>
 
@@ -41,14 +41,14 @@
                                 <a href="{{ route('equipment.loan') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Peminjaman Alat
                                 </a>
-                                
+
                                 <a href="{{ route('visit.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
                                     Jadwalkan Kunjungan
                                 </a>
                             </div>
                         </div>
                     </div>
-                    <a href="{{ route('facilities') }}#fasilitas" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
+                    <a href="{{ route('facilities') }}" class="nav-link text-white hover:text-yellow-400 font-medium transition-colors duration-200">Fasilitas</a>
 
                 </div>
             </div>

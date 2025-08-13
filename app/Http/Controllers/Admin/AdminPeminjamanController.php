@@ -74,8 +74,27 @@ class AdminPeminjamanController extends Controller
         $request->validate([
             'status' => 'required|in:PENDING,APPROVED,ACTIVE,COMPLETED,CANCELLED',
             'item_conditions' => 'sometimes|array',
+           'item_conditions.*.baik' => 'sometimes|integer|min:0',
+        'item_conditions.*.rusak' => 'sometimes|integer|min:0',
             'cancel_reason' => 'sometimes|string|max:500'
         ]);
+
+        if ($request->status === 'COMPLETED' && $request->has('item_conditions')) {
+        foreach ($request->item_conditions as $alatId => $conditions) {
+            $item = $peminjaman->items()->where('alat_id', $alatId)->first();
+            if ($item) {
+                $baikQty = (int)($conditions['baik'] ?? 0);
+                $rusakQty = (int)($conditions['rusak'] ?? 0);
+                $total = $baikQty + $rusakQty;
+
+                if ($total !== $item->jumlah) {
+                    return redirect()->back()->with('error',
+                        "Total kondisi untuk {$item->alat->nama} tidak sesuai dengan jumlah yang dipinjam ({$total}/{$item->jumlah})"
+                    );
+                }
+            }
+        }
+    }
 
         try {
             DB::beginTransaction();

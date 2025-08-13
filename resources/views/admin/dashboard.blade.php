@@ -4,22 +4,19 @@
 
 @section('styles')
 <style>
-    .card {
+    .stat-card {
         background: white;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         border: 1px solid #f1f5f9;
         transition: all 0.2s ease;
-    }
-
-    .card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        transform: translateY(-1px);
-    }
-
-    .stat-card {
         position: relative;
         overflow: hidden;
+    }
+
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
     }
 
     .stat-card::before {
@@ -28,51 +25,41 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 4px;
         background: var(--accent-color);
-        opacity: 0;
-        transition: opacity 0.2s ease;
     }
 
-    .stat-card:hover::before {
-        opacity: 1;
-    }
+    .stat-card.blue { --accent-color: #3b82f6; }
+    .stat-card.green { --accent-color: #10b981; }
+    .stat-card.purple { --accent-color: #8b5cf6; }
+    .stat-card.orange { --accent-color: #f59e0b; }
+    .stat-card.indigo { --accent-color: #6366f1; }
 
-    .stat-card.blue {
-        --accent-color: #2563eb;
-    }
-
-    .stat-card.emerald {
-        --accent-color: #059669;
-    }
-
-    .stat-card.purple {
-        --accent-color: #7c3aed;
-    }
-
-    .stat-card.orange {
-        --accent-color: #ea580c;
+    .activity-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
     }
 
     .activity-item {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem;
-        border-radius: 8px;
-        background: #fafbfc;
-        border: 1px solid #f1f5f9;
-        transition: all 0.2s ease;
+        padding: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.2s ease;
     }
 
     .activity-item:hover {
-        background: #f8fafc;
-        border-color: #e2e8f0;
+        background-color: #f8fafc;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
     }
 
     .status-badge {
-        padding: 0.25rem 0.5rem;
+        padding: 4px 8px;
         border-radius: 6px;
-        font-size: 0.75rem;
+        font-size: 12px;
         font-weight: 500;
     }
 
@@ -86,9 +73,28 @@
         color: #059669;
     }
 
+    .status-processing {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .status-completed {
+        background: #d1fae5;
+        color: #059669;
+    }
+
     .status-rejected {
         background: #fee2e2;
         color: #dc2626;
+    }
+
+    .icon-container {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .fade-up {
@@ -106,305 +112,388 @@
         }
     }
 
-    .text-primary {
-        color: #1e40af;
+    .quick-action-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
+        transition: transform 0.2s ease;
     }
 
-    .bg-primary {
-        background-color: #2563eb;
-    }
-
-    .bg-primary:hover {
-        background-color: #1d4ed8;
-    }
-
-    .progress-bar {
-        background: #f1f5f9;
-        border-radius: 6px;
-        overflow: hidden;
-        height: 8px;
-    }
-
-    .progress-fill {
-        height: 100%;
-        transition: width 0.8s ease;
-        border-radius: 6px;
-    }
-
-    .chart-container {
-        height: 200px;
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        padding: 1rem 0;
-        gap: 0.5rem;
-    }
-
-    .chart-bar {
-        background: linear-gradient(to top, #2563eb, #60a5fa);
-        border-radius: 4px;
-        min-height: 20px;
-        flex: 1;
-        position: relative;
-        transition: all 0.3s ease;
-    }
-
-    .chart-bar:hover {
+    .quick-action-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-    }
-
-    .chart-label {
-        position: absolute;
-        bottom: -25px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.75rem;
-        color: #6b7280;
-        white-space: nowrap;
     }
 </style>
 @endsection
 
 @section('content')
+<div class="space-y-6">
     <!-- Header Section -->
-    <div class="mb-8 fade-up">
-        <h1 class="text-3xl font-semibold text-gray-900 mb-2">Dashboard</h1>
-        <p class="text-gray-600">Selamat datang di sistem manajemen Laboratorium Fisika Dasar</p>
+    <div class="fade-up">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-gray-600 mt-2">Selamat datang di sistem manajemen Laboratorium Fisika Dasar</p>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Peminjaman Alat Card -->
-        <div class="stat-card blue card p-6 fade-up" style="animation-delay: 0.1s">
-            <div class="flex items-center justify-between mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <!-- Peminjaman Pending -->
+        <div class="stat-card blue p-6">
+            <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Peminjaman Alat</p>
-                    <p class="text-3xl font-semibold text-gray-900">
-                        {{ \App\Models\Peminjaman::where('status', 'pending')->count() }}
+                    <p class="text-sm font-medium text-gray-600">Peminjaman Pending</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        @php
+                            $peminjamanPending = 0;
+                            try {
+                                $peminjamanPending = \App\Models\Peminjaman::where('status', 'pending')->count();
+                            } catch (Exception $e) {
+                                // Handle if model doesn't exist
+                            }
+                        @endphp
+                        {{ $peminjamanPending }}
                     </p>
                 </div>
-                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-exchange-alt text-blue-600 text-xl"></i>
+                <div class="icon-container bg-blue-50">
+                    <i class="fas fa-exchange-alt text-blue-600"></i>
                 </div>
             </div>
-            <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            <a href="{{ route('admin.peminjaman.index') }}"
-               class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
-                Kelola peminjaman
-                <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a>
+            <div class="mt-4">
+                <a href="{{ route('admin.peminjaman.index') }}"
+                   class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Lihat semua →
+                </a>
+            </div>
         </div>
 
-        <!-- Kunjungan Card -->
-        <div class="stat-card purple card p-6 fade-up" style="animation-delay: 0.3s">
-            <div class="flex items-center justify-between mb-4">
+        <!-- Kunjungan Pending -->
+        <div class="stat-card purple p-6">
+            <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Kunjungan</p>
-                    <p class="text-3xl font-semibold text-gray-900">
-                        {{ \App\Models\Kunjungan::where('status', 'pending')->count() }}
+                    <p class="text-sm font-medium text-gray-600">Kunjungan Pending</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        @php
+                            $kunjunganPending = 0;
+                            try {
+                                $kunjunganPending = \App\Models\Kunjungan::where('status', 'pending')->count();
+                            } catch (Exception $e) {
+                                // Handle if model doesn't exist
+                            }
+                        @endphp
+                        {{ $kunjunganPending }}
                     </p>
                 </div>
-                <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
+                <div class="icon-container bg-purple-50">
+                    <i class="fas fa-calendar-check text-purple-600"></i>
                 </div>
             </div>
-            <p class="text-sm text-gray-500 mb-4">Menunggu persetujuan</p>
-            <a href="{{ route('admin.visits.index') }}"
-               class="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700">
-                Kelola kunjungan
-                <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a>
+            <div class="mt-4">
+                <a href="{{ route('admin.visits.index') }}"
+                   class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                    Lihat semua →
+                </a>
+            </div>
         </div>
 
-        <!-- Total Peralatan Card -->
-        <div class="stat-card orange card p-6 fade-up" style="animation-delay: 0.4s">
-            <div class="flex items-center justify-between mb-4">
+        <!-- Total Equipment -->
+        <div class="stat-card green p-6">
+            <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Total Peralatan</p>
-                    <p class="text-3xl font-semibold text-gray-900">
-                        {{ \App\Models\Alat::count() }}
+                    <p class="text-sm font-medium text-gray-600">Total Peralatan</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        @php
+                            $totalAlat = 0;
+                            try {
+                                $totalAlat = \App\Models\Alat::count();
+                            } catch (Exception $e) {
+                                // Handle if model doesn't exist
+                            }
+                        @endphp
+                        {{ $totalAlat }}
                     </p>
                 </div>
-                <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-tools text-orange-600 text-xl"></i>
+                <div class="icon-container bg-green-50">
+                    <i class="fas fa-tools text-green-600"></i>
                 </div>
             </div>
-            <p class="text-sm text-gray-500 mb-4">Alat tersedia</p>
-            <a href="{{ route('admin.equipment.index') }}"
-               class="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700">
-                Kelola peralatan
-                <i class="fas fa-arrow-right ml-2 text-xs"></i>
-            </a>
+            <div class="mt-4">
+                <a href="{{ route('admin.equipment.index') }}"
+                   class="text-sm text-green-600 hover:text-green-700 font-medium">
+                    Kelola peralatan →
+                </a>
+            </div>
+        </div>
+
+        <!-- Total Staff -->
+        <div class="stat-card orange p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Staff</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        @php
+                            $totalStaff = 0;
+                            try {
+                                $totalStaff = \App\Models\BiodataPengurus::count();
+                            } catch (Exception $e) {
+                                // Handle if model doesn't exist
+                            }
+                        @endphp
+                        {{ $totalStaff }}
+                    </p>
+                </div>
+                <div class="icon-container bg-orange-50">
+                    <i class="fas fa-users text-orange-600"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.staff.index') }}"
+                   class="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                    Kelola staff →
+                </a>
+            </div>
+        </div>
+
+        <!-- Total Articles -->
+        <div class="stat-card blue p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Artikel</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        @php
+                            $totalArtikel = 0;
+                            try {
+                                $totalArtikel = \App\Models\Artikel::count();
+                            } catch (Exception $e) {
+                                // Handle if model doesn't exist
+                            }
+                        @endphp
+                        {{ $totalArtikel }}
+                    </p>
+                </div>
+                <div class="icon-container bg-indigo-50">
+                    <i class="fas fa-newspaper text-indigo-600"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.articles.index') }}"
+                   class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                    Kelola artikel →
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Chart and Summary Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Monthly Activity Chart -->
-        <div class="card p-6 fade-up" style="animation-delay: 0.5s">
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-1">Aktivitas Bulanan</h2>
-                <p class="text-sm text-gray-600">Grafik aktivitas 7 hari terakhir</p>
-            </div>
-            <div class="chart-container">
-                @php
-                    $days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-                    $activities = [45, 62, 38, 75, 58, 42, 35]; // Sample data
-                @endphp
-                @foreach($days as $index => $day)
-                <div class="chart-bar" style="height: {{ $activities[$index] }}%">
-                    <div class="chart-label">{{ $day }}</div>
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="quick-action-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold">Kelola Jadwal</h3>
+                    <p class="text-white/80 text-sm mt-1">Atur jadwal available lab</p>
                 </div>
-                @endforeach
+                <i class="fas fa-calendar-alt text-2xl text-white/80"></i>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.schedule.index') }}"
+                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Buka Jadwal
+                </a>
             </div>
         </div>
 
-        <!-- System Summary -->
-        <div class="card p-6 fade-up" style="animation-delay: 0.6s">
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-1">Ringkasan Sistem</h2>
-                <p class="text-sm text-gray-600">Status dan performa sistem</p>
+        <div class="quick-action-card p-6" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold">Kelola Artikel</h3>
+                    <p class="text-white/80 text-sm mt-1">Publish artikel terbaru</p>
+                </div>
+                <i class="fas fa-newspaper text-2xl text-white/80"></i>
             </div>
-            <div class="space-y-4">
-                <!-- Tingkat Persetujuan -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-gray-700">Tingkat Persetujuan</span>
-                        <span class="text-sm text-gray-500">85%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill bg-emerald-500" style="width: 85%"></div>
-                    </div>
-                </div>
-
-                <!-- Utilitas Peralatan -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-gray-700">Utilitas Peralatan</span>
-                        <span class="text-sm text-gray-500">72%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill bg-blue-500" style="width: 72%"></div>
-                    </div>
-                </div>
-
-                <!-- Kepuasan Pengguna -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-gray-700">Kepuasan Pengguna</span>
-                        <span class="text-sm text-gray-500">91%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill bg-purple-500" style="width: 91%"></div>
-                    </div>
-                </div>
-
-                <!-- Response Time -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-gray-700">Response Time</span>
-                        <span class="text-sm text-gray-500">1.2 hari</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill bg-orange-500" style="width: 78%"></div>
-                    </div>
-                </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.articles.index') }}"
+                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Kelola Artikel
+                </a>
             </div>
         </div>
+
+        @if(Auth::user()->role === 'super_admin')
+        <div class="quick-action-card p-6" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold">Kelola Admin</h3>
+                    <p class="text-white/80 text-sm mt-1">Manage admin users</p>
+                </div>
+                <i class="fas fa-user-shield text-2xl text-white/80"></i>
+            </div>
+            <div class="mt-4">
+                <a href="{{ route('admin.users.index') }}"
+                   class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    Kelola Admin
+                </a>
+            </div>
+        </div>
+        @endif
     </div>
 
-    <!-- Recent Activity -->
+    <!-- Recent Activities -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent Loans -->
-        <div class="card p-6 fade-up" style="animation-delay: 0.7s">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Peminjaman Terbaru</h3>
-                <i class="fas fa-exchange-alt text-blue-500"></i>
+        <!-- Recent Peminjaman -->
+        <div class="activity-card">
+            <div class="p-6 border-b">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Peminjaman Terbaru</h3>
+                    <i class="fas fa-exchange-alt text-blue-500"></i>
+                </div>
             </div>
-            <div class="space-y-3">
-                @forelse(\App\Models\Peminjaman::latest()->take(4)->get() as $loan)
-                <div class="activity-item">
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900 text-sm">{{ $loan->user->name ?? 'User' }}</p>
-                        <p class="text-gray-500 text-xs">{{ $loan->created_at->format('d M Y, H:i') }}</p>
+            <div class="max-h-80 overflow-y-auto">
+                @php
+                    $recentPeminjaman = collect();
+                    try {
+                        $recentPeminjaman = \App\Models\Peminjaman::with('user')->latest()->take(5)->get();
+                    } catch (Exception $e) {
+                        // Handle if model doesn't exist
+                    }
+                @endphp
+
+                @forelse($recentPeminjaman as $peminjaman)
+                <div class="activity-item flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exchange-alt text-blue-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900 text-sm">
+                                {{ $peminjaman->user->name ?? 'Unknown User' }}
+                            </p>
+                            <p class="text-gray-500 text-xs">
+                                {{ $peminjaman->created_at->diffForHumans() }}
+                            </p>
+                        </div>
                     </div>
-                    <span class="status-badge status-{{ $loan->status }}">
-                        {{ ucfirst($loan->status) }}
+                    <span class="status-badge status-{{ $peminjaman->status }}">
+                        {{ ucfirst($peminjaman->status) }}
                     </span>
                 </div>
                 @empty
-                <div class="text-center py-8">
-                    <i class="fas fa-inbox text-gray-300 text-3xl mb-3"></i>
+                <div class="p-8 text-center">
+                    <i class="fas fa-inbox text-gray-300 text-3xl mb-2"></i>
                     <p class="text-gray-500 text-sm">Belum ada data peminjaman</p>
                 </div>
                 @endforelse
             </div>
+            @if($recentPeminjaman->count() > 0)
+            <div class="p-4 border-t bg-gray-50">
+                <a href="{{ route('admin.peminjaman.index') }}"
+                   class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Lihat semua peminjaman →
+                </a>
+            </div>
+            @endif
         </div>
 
-        <!-- Recent Tests -->
-        <div class="card p-6 fade-up" style="animation-delay: 0.8s">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Pengujian Terbaru</h3>
-                <i class="fas fa-flask text-emerald-500"></i>
+        <!-- Recent Kunjungan -->
+        <div class="activity-card">
+            <div class="p-6 border-b">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Kunjungan Terbaru</h3>
+                    <i class="fas fa-calendar-check text-purple-500"></i>
+                </div>
             </div>
-            <div class="space-y-3">
-                @forelse(\App\Models\Pengujian::latest()->take(4)->get() as $test)
-                <div class="activity-item">
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900 text-sm">{{ $test->user->name ?? 'User' }}</p>
-                        <p class="text-gray-500 text-xs">{{ $test->created_at->format('d M Y, H:i') }}</p>
+            <div class="max-h-80 overflow-y-auto">
+                @php
+                    $recentKunjungan = collect();
+                    try {
+                        $recentKunjungan = \App\Models\Kunjungan::latest()->take(5)->get();
+                    } catch (Exception $e) {
+                        // Handle if model doesn't exist
+                    }
+                @endphp
+
+                @forelse($recentKunjungan as $kunjungan)
+                <div class="activity-item flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-calendar-check text-purple-600 text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900 text-sm">
+                                {{ $kunjungan->namaPengunjung ?? 'Unknown Visitor' }}
+                            </p>
+                            <p class="text-gray-500 text-xs">
+                                @if($kunjungan->tanggal_kunjungan)
+                                    {{ \Carbon\Carbon::parse($kunjungan->tanggal_kunjungan)->format('d M Y') }}
+                                @else
+                                    {{ $kunjungan->created_at->diffForHumans() }}
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                    <span class="status-badge status-{{ $test->status }}">
-                        {{ ucfirst($test->status) }}
+                    <span class="status-badge status-{{ $kunjungan->status }}">
+                        {{ ucfirst($kunjungan->status) }}
                     </span>
                 </div>
                 @empty
-                <div class="text-center py-8">
-                    <i class="fas fa-inbox text-gray-300 text-3xl mb-3"></i>
-                    <p class="text-gray-500 text-sm">Belum ada data pengujian</p>
+                <div class="p-8 text-center">
+                    <i class="fas fa-inbox text-gray-300 text-3xl mb-2"></i>
+                    <p class="text-gray-500 text-sm">Belum ada data kunjungan</p>
                 </div>
                 @endforelse
             </div>
+            @if($recentKunjungan->count() > 0)
+            <div class="p-4 border-t bg-gray-50">
+                <a href="{{ route('admin.visits.index') }}"
+                   class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                    Lihat semua kunjungan →
+                </a>
+            </div>
+            @endif
         </div>
     </div>
+
+    <!-- System Info -->
+    <div class="bg-white rounded-lg border p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Sistem</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-server text-blue-600"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Server Status</p>
+                <p class="text-xs text-green-600 mt-1">Online</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-database text-green-600"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Database</p>
+                <p class="text-xs text-green-600 mt-1">Connected</p>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-clock text-purple-600"></i>
+                </div>
+                <p class="text-sm font-medium text-gray-900">Last Update</p>
+                <p class="text-xs text-gray-600 mt-1">{{ now()->format('d M Y, H:i') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Simple fade-in animation for stat numbers
-    const statNumbers = document.querySelectorAll('.stat-card .text-3xl');
+    // Simple fade-in animation
+    const cards = document.querySelectorAll('.stat-card, .activity-card, .quick-action-card');
 
-    const observerOptions = {
-        threshold: 0.5,
-        rootMargin: '0px 0px -50px 0px'
-    };
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.6s ease';
 
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    statNumbers.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(10px)';
-        el.style.transition = 'all 0.6s ease';
-        observer.observe(el);
-    });
-
-    // Animate progress bars
-    const progressBars = document.querySelectorAll('.progress-fill');
-    progressBars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0';
         setTimeout(() => {
-            bar.style.width = width;
-        }, 500);
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
     });
 });
 </script>

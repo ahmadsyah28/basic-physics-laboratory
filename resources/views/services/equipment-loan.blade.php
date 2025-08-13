@@ -251,8 +251,10 @@
         </div>
 
         <!-- Equipment Grid -->
+    <!-- Equipment Grid -->
         <div id="equipment-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @foreach($equipments as $index => $equipment)
+            <!-- Equipment Card with Fixed Status Logic -->
             <div class="equipment-card bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 scroll-animate"
                  data-animation="fade-up"
                  data-delay="{{ $index * 100 }}"
@@ -261,7 +263,7 @@
                  data-name="{{ strtolower($equipment['name']) }}"
                  data-equipment-id="{{ $equipment['id'] }}">
 
-                <!-- Selection Checkbox & Quantity -->
+                <!-- Selection Checkbox & Quantity - Only show if available -->
                 <div class="absolute top-4 left-4 z-10">
                     @if($equipment['status'] === 'available' && $equipment['quantity_available'] > 0)
                     <div class="flex flex-col space-y-2">
@@ -290,13 +292,11 @@
                 <!-- Image -->
                 <div class="relative overflow-hidden h-48 bg-gradient-to-br from-gray-100 to-gray-200">
                     @if(!empty($equipment['image']) && $equipment['image'] !== 'default.jpg')
-                        {{-- Gunakan asset dengan storage path yang benar --}}
                         <img src="{{ asset('storage/equipment/' . $equipment['image']) }}"
                             alt="{{ $equipment['name'] }}"
                             class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700"
                             onerror="this.src='{{ asset('images/equipment/default.jpg') }}'">
                     @else
-                        {{-- Default image jika tidak ada gambar --}}
                         <div class="w-full h-full flex items-center justify-center bg-gray-200">
                             <div class="text-center text-gray-400">
                                 <i class="fas fa-image text-4xl mb-2"></i>
@@ -304,23 +304,29 @@
                             </div>
                         </div>
                     @endif
-                    <!-- Status Badge -->
+
+                    <!-- Status Badge with Updated Logic -->
                     <div class="absolute top-4 right-4">
                         @if($equipment['status'] === 'available')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                            Tersedia
-                        </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                Tersedia
+                            </span>
+                        @elseif($equipment['status'] === 'borrowed')
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                Dipinjam
+                            </span>
                         @elseif($equipment['status'] === 'maintenance')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
-                            <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                            Maintenance
-                        </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                Maintenance
+                            </span>
                         @else
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                            <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                            Habis
-                        </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                <div class="w-2 h-2 bg-gray-500 rounded-full mr-2"></div>
+                                Tidak Tersedia
+                            </span>
                         @endif
                     </div>
 
@@ -331,13 +337,30 @@
                         </div>
                     </div>
 
-                    <!-- Quantity Indicator -->
+                    <!-- Stock Information with Enhanced Details -->
                     <div class="absolute bottom-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                            <div class="text-xs text-gray-600">Tersedia</div>
-                            <div class="text-sm font-bold text-blue-600">
-                                {{ $equipment['quantity_available'] }}/{{ $equipment['quantity_total'] }}
-                            </div>
+                            @if($equipment['status'] === 'available')
+                                <div class="text-xs text-gray-600">Tersedia</div>
+                                <div class="text-sm font-bold text-green-600">
+                                    {{ $equipment['quantity_available'] }}/{{ $equipment['quantity_total'] }}
+                                </div>
+                            @elseif($equipment['status'] === 'borrowed')
+                                <div class="text-xs text-gray-600">Dipinjam</div>
+                                <div class="text-sm font-bold text-yellow-600">
+                                    {{ $equipment['quantity_borrowed'] }}/{{ $equipment['quantity_total'] }}
+                                </div>
+                            @elseif($equipment['status'] === 'maintenance')
+                                <div class="text-xs text-gray-600">Rusak</div>
+                                <div class="text-sm font-bold text-red-600">
+                                    {{ $equipment['quantity_damaged'] }}/{{ $equipment['quantity_total'] }}
+                                </div>
+                            @else
+                                <div class="text-xs text-gray-600">Stok</div>
+                                <div class="text-sm font-bold text-gray-600">
+                                    0/{{ $equipment['quantity_total'] }}
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -358,26 +381,46 @@
                         {{ $equipment['description'] }}
                     </p>
 
-                    <!-- Specifications Preview -->
-                    <div class="mb-4">
-                        <h4 class="text-sm font-semibold text-gray-900 mb-2">Spesifikasi Utama</h4>
-                        <div class="space-y-1">
-                            @if(!empty($equipment['specifications']))
-                                @foreach(array_slice($equipment['specifications'], 0, 2) as $spec)
-                                <div class="flex items-center text-xs text-gray-600">
-                                    <i class="fas fa-check-circle text-blue-500 mr-2 flex-shrink-0"></i>
-                                    <span>{{ $spec }}</span>
-                                </div>
-                                @endforeach
-                                @if(count($equipment['specifications']) > 2)
-                                <div class="text-xs text-blue-600 font-medium">
-                                    +{{ count($equipment['specifications']) - 2 }} spesifikasi lainnya
-                                </div>
-                                @endif
-                            @else
-                                <div class="text-xs text-gray-500">Spesifikasi akan diinformasikan saat briefing</div>
-                            @endif
+                    <!-- Enhanced Stock Status Display -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <h4 class="text-xs font-semibold text-gray-700 mb-2">Status Stok Detail</h4>
+
+                        @if(isset($equipment['detailed_status']))
+                            <div class="text-xs text-gray-600 mb-2">{{ $equipment['detailed_status'] }}</div>
+                        @endif
+
+                        <!-- Stock Breakdown -->
+                        <div class="grid grid-cols-3 gap-2 text-xs">
+                            <div class="text-center">
+                                <div class="font-semibold text-green-600">{{ $equipment['quantity_available'] }}</div>
+                                <div class="text-gray-500">Tersedia</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold text-yellow-600">{{ $equipment['quantity_borrowed'] }}</div>
+                                <div class="text-gray-500">Dipinjam</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-semibold text-red-600">{{ $equipment['quantity_damaged'] }}</div>
+                                <div class="text-gray-500">Rusak</div>
+                            </div>
                         </div>
+
+                        <!-- Borrowing Status Info -->
+                        @if(isset($equipment['borrowing_status']))
+                            <div class="mt-2 text-xs">
+                                @if($equipment['borrowing_status']['can_borrow'])
+                                    <span class="text-green-600 font-medium">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        {{ $equipment['borrowing_status']['message'] }}
+                                    </span>
+                                @else
+                                    <span class="text-red-600 font-medium">
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                        {{ $equipment['borrowing_status']['message'] }}
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Loan Duration -->
@@ -397,17 +440,29 @@
                         </a>
 
                         @if($equipment['status'] === 'available' && $equipment['quantity_available'] > 0)
-                        <button onclick="quickAddToSelection('{{ $equipment['id'] }}')"
-                                class="w-full border-2 border-blue-500 text-blue-500 px-4 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center justify-center">
-                            <i class="fas fa-plus mr-2"></i>
-                            Tambah ke Pilihan
-                        </button>
+                            <button onclick="quickAddToSelection('{{ $equipment['id'] }}')"
+                                    class="w-full border-2 border-blue-500 text-blue-500 px-4 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center justify-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                Tambah ke Pilihan
+                            </button>
+                        @elseif($equipment['status'] === 'borrowed')
+                            <button disabled
+                                    class="w-full border-2 border-yellow-300 text-yellow-600 px-4 py-3 rounded-xl font-semibold cursor-not-allowed flex items-center justify-center">
+                                <i class="fas fa-hand-holding mr-2"></i>
+                                Sedang Dipinjam
+                            </button>
+                        @elseif($equipment['status'] === 'maintenance')
+                            <button disabled
+                                    class="w-full border-2 border-red-300 text-red-600 px-4 py-3 rounded-xl font-semibold cursor-not-allowed flex items-center justify-center">
+                                <i class="fas fa-wrench mr-2"></i>
+                                Sedang Maintenance
+                            </button>
                         @else
-                        <button disabled
-                                class="w-full border-2 border-gray-300 text-gray-400 px-4 py-3 rounded-xl font-semibold cursor-not-allowed flex items-center justify-center">
-                            <i class="fas fa-times-circle mr-2"></i>
-                            Tidak Tersedia
-                        </button>
+                            <button disabled
+                                    class="w-full border-2 border-gray-300 text-gray-400 px-4 py-3 rounded-xl font-semibold cursor-not-allowed flex items-center justify-center">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                Tidak Tersedia
+                            </button>
                         @endif
                     </div>
                 </div>

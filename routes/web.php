@@ -152,13 +152,10 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
 
         // Get available slots for admin (with exclude option for editing)
         Route::get('/slots/available', [AdminVisitController::class, 'getAvailableSlots'])->name('available-slots');
-
-        // Download document from admin panel
-        Route::get('/{kunjungan}/document', [AdminVisitController::class, 'downloadDocument'])->name('download-document');
     });
 
     // Schedule Availability Management
-     Route::prefix('schedule')->name('schedule.')->group(function () {
+    Route::prefix('schedule')->name('schedule.')->group(function () {
         Route::get('/', [AdminScheduleController::class, 'index'])->name('index');
         Route::get('/show', [AdminScheduleController::class, 'show'])->name('show');
         Route::post('/update-slot', [AdminScheduleController::class, 'updateSlot'])->name('update-slot');
@@ -186,11 +183,6 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
     Route::resource('articles', AdminArticleController::class);
     Route::delete('/articles/image/{gambar}', [AdminArticleController::class, 'destroyImage'])->name('articles.image.destroy');
 
-    // User Management (Admin users)
-    Route::middleware([\App\Http\Middleware\SuperAdminMiddleware::class])->group(function () {
-        Route::resource('users', AdminUserController::class);
-    });
-
     // Vision & Mission Management
     Route::prefix('visimisi')->name('visimisi.')->group(function () {
         Route::get('/', [AdminVisiMisiController::class, 'index'])->name('index');
@@ -200,10 +192,43 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', \App\Http\Mid
         Route::delete('/misi/{misi}', [AdminVisiMisiController::class, 'destroyMisi'])->name('destroy-misi');
     });
 
-        // Facility Management
+    // Facility Management
     Route::prefix('facilities')->name('facilities.')->group(function () {
         Route::get('/', [AdminFacilityController::class, 'index'])->name('index');
         Route::get('/edit', [AdminFacilityController::class, 'edit'])->name('edit');
         Route::put('/update', [AdminFacilityController::class, 'update'])->name('update');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Super Admin Only Routes - User Management
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware([\App\Http\Middleware\SuperAdminMiddleware::class])->group(function () {
+        // User Management (Admin users) - Full CRUD with additional features
+        Route::prefix('users')->name('users.')->group(function () {
+            // Main CRUD routes
+            Route::get('/', [AdminUserController::class, 'index'])->name('index');
+            Route::get('/create', [AdminUserController::class, 'create'])->name('create');
+            Route::post('/', [AdminUserController::class, 'store'])->name('store');
+            Route::get('/{user}', [AdminUserController::class, 'show'])->name('show');
+            Route::get('/{user}/edit', [AdminUserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [AdminUserController::class, 'update'])->name('update');
+            Route::delete('/{user}', [AdminUserController::class, 'destroy'])->name('destroy');
+
+            // Additional API/AJAX routes for enhanced functionality
+            Route::get('/api/stats', [AdminUserController::class, 'getStats'])->name('api.stats');
+            Route::get('/{user}/api/deletable', [AdminUserController::class, 'checkDeletable'])->name('api.deletable');
+        });
+
+        // Alternative resource route (if you prefer Laravel resource convention)
+        // Route::resource('users', AdminUserController::class);
+
+        // Additional Super Admin routes can be added here
+        Route::prefix('system')->name('system.')->group(function () {
+            // System settings, logs, etc. (for future development)
+            // Route::get('/settings', [AdminSystemController::class, 'settings'])->name('settings');
+            // Route::get('/logs', [AdminSystemController::class, 'logs'])->name('logs');
+        });
     });
 });

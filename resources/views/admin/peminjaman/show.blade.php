@@ -1,4 +1,4 @@
-{{-- resources/views/admin/peminjaman/show.blade.php --}}
+{{-- FILE LENGKAP: resources/views/admin/peminjaman/show.blade.php --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Peminjaman - ' . $peminjaman->namaPeminjam)
@@ -141,104 +141,123 @@
                 @php
                     $conditions = json_decode($peminjaman->kondisi_pengembalian, true) ?? [];
                 @endphp
-                <div class="space-y-3">
+                <div class="space-y-4">
                     @foreach($peminjaman->items as $item)
                         @php
-                            $condition = $conditions[$item->alat_id] ?? 'baik';
-                            $conditionColor = match($condition) {
-                                'baik' => 'text-green-600 bg-green-50',
-                                'rusak_ringan' => 'text-yellow-600 bg-yellow-50',
-                                'rusak_berat' => 'text-red-600 bg-red-50',
-                                'hilang' => 'text-red-800 bg-red-100',
-                                default => 'text-gray-600 bg-gray-50'
-                            };
+                            $itemConditions = $conditions[$item->alat_id] ?? [];
+                            $baikQty = $itemConditions['baik'] ?? $item->jumlah;
+                            $rusakQty = $itemConditions['rusak'] ?? 0;
                         @endphp
-                        <div class="flex items-center justify-between p-3 rounded-lg {{ $conditionColor }}">
-                            <span class="font-medium">{{ $item->alat->nama }}</span>
-                            <span class="text-sm">{{ ucwords(str_replace('_', ' ', $condition)) }}</span>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-gray-900">{{ $item->alat->nama }}</h4>
+                                <span class="text-sm text-gray-500">Total: {{ $item->jumlah }} unit</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                @if($baikQty > 0)
+                                <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                                    <div>
+                                        <div class="font-medium text-green-700">{{ $baikQty }} unit</div>
+                                        <div class="text-xs text-gray-600">Kondisi Baik</div>
+                                    </div>
+                                </div>
+                                @endif
+
+                                @if($rusakQty > 0)
+                                <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                                    <div>
+                                        <div class="font-medium text-red-700">{{ $rusakQty }} unit</div>
+                                        <div class="text-xs text-gray-600">Kondisi Rusak</div>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
             </div>
             @endif
+
             <!-- WhatsApp Communication Section -->
-        <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fab fa-whatsapp text-green-600 mr-3"></i>
-                Komunikasi WhatsApp
-            </h3>
+            <div class="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fab fa-whatsapp text-green-600 mr-3"></i>
+                    Komunikasi WhatsApp
+                </h3>
 
-            <div class="space-y-4">
-                <!-- Send Update to Borrower -->
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Kirim Update ke Peminjam</h4>
-                    <p class="text-sm text-gray-600 mb-3">Kirim update status peminjaman langsung ke WhatsApp peminjam</p>
+                <div class="space-y-4">
+                    <!-- Send Update to Borrower -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-2">Kirim Update ke Peminjam</h4>
+                        <p class="text-sm text-gray-600 mb-3">Kirim update status peminjaman langsung ke WhatsApp peminjam</p>
 
-                    <div class="flex flex-wrap gap-2">
-                        @if($peminjaman->status === 'PENDING')
-                        <button onclick="sendStatusUpdate('approved')"
-                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Kirim Persetujuan
-                        </button>
-                        <button onclick="sendStatusUpdate('rejected')"
-                                class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Kirim Penolakan
-                        </button>
-                        @endif
+                        <div class="flex flex-wrap gap-2">
+                            @if($peminjaman->status === 'PENDING')
+                            <button onclick="sendStatusUpdate('approved')"
+                                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Kirim Persetujuan
+                            </button>
+                            <button onclick="sendStatusUpdate('rejected')"
+                                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Kirim Penolakan
+                            </button>
+                            @endif
 
-                        @if($peminjaman->status === 'APPROVED')
-                        <button onclick="sendStatusUpdate('pickup')"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Siap Diambil
-                        </button>
-                        @endif
+                            @if($peminjaman->status === 'APPROVED')
+                            <button onclick="sendStatusUpdate('pickup')"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Siap Diambil
+                            </button>
+                            @endif
 
-                        @if($peminjaman->status === 'ACTIVE')
-                        <button onclick="sendStatusUpdate('reminder')"
-                                class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Kirim Pengingat
-                        </button>
-                        @endif
+                            @if($peminjaman->status === 'ACTIVE')
+                            <button onclick="sendStatusUpdate('reminder')"
+                                    class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Kirim Pengingat
+                            </button>
+                            @endif
 
-                        @if($peminjaman->status === 'COMPLETED')
-                        <button onclick="sendStatusUpdate('completed')"
-                                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Terima Kasih
-                        </button>
-                        @endif
+                            @if($peminjaman->status === 'COMPLETED')
+                            <button onclick="sendStatusUpdate('completed')"
+                                    class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Terima Kasih
+                            </button>
+                            @endif
 
-                        <button onclick="sendCustomMessage()"
-                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>
-                            Pesan Custom
-                        </button>
+                            <button onclick="sendCustomMessage()"
+                                    class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
+                                <i class="fab fa-whatsapp mr-2"></i>
+                                Pesan Custom
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tracking Link -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-2">Link Tracking</h4>
+                        <p class="text-sm text-gray-600 mb-2">Link untuk peminjam memantau status peminjaman:</p>
+                        <div class="flex items-center space-x-2">
+                            <input type="text"
+                                   value="{{ route('equipment.track', $peminjaman->id) }}"
+                                   readonly
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm">
+                            <button onclick="copyToClipboard('{{ route('equipment.track', $peminjaman->id) }}')"
+                                    class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
+                                <i class="fas fa-copy mr-2"></i>
+                                Copy
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Tracking Link -->
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Link Tracking</h4>
-                    <p class="text-sm text-gray-600 mb-2">Link untuk peminjam memantau status peminjaman:</p>
-                    <div class="flex items-center space-x-2">
-                        <input type="text"
-                               value="{{ route('equipment.track', $peminjaman->id) }}"
-                               readonly
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm">
-                        <button onclick="copyToClipboard('{{ route('equipment.track', $peminjaman->id) }}')"
-                                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 flex items-center">
-                            <i class="fas fa-copy mr-2"></i>
-                            Copy
-                        </button>
-                    </div>
-                </div>
-
             </div>
-        </div>
         </div>
 
         <!-- Sidebar -->
@@ -366,11 +385,11 @@
     </div>
 </div>
 
-<!-- Complete Modal -->
+<!-- Complete Modal dengan Partial Conditions -->
 <div id="completeModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeCompleteModal()"></div>
-        <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+        <div class="inline-block w-full max-w-4xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-semibold text-gray-900">Selesaikan Peminjaman</h3>
                 <button onclick="closeCompleteModal()" class="text-gray-400 hover:text-gray-600">
@@ -378,55 +397,99 @@
                 </button>
             </div>
 
-            <p class="text-gray-600 mb-6">Pilih kondisi setiap alat saat dikembalikan:</p>
+            <p class="text-gray-600 mb-6">Tentukan kondisi dan jumlah setiap alat saat dikembalikan:</p>
 
             <form id="completeForm" method="POST" action="{{ route('admin.peminjaman.update-status', $peminjaman) }}">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="status" value="COMPLETED">
 
-                <div class="space-y-4 mb-6">
+                <div class="space-y-6 mb-6">
                     @foreach($peminjaman->items as $item)
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <h4 class="font-semibold text-gray-900">{{ $item->alat->nama }}</h4>
-                                <p class="text-sm text-gray-600">{{ $item->jumlah }} unit</p>
+                    <div class="border-2 border-gray-200 rounded-lg p-6 bg-gray-50">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-4">
+                                <!-- Equipment Image -->
+                                <div class="w-16 h-16 bg-white rounded-lg overflow-hidden border">
+                                    @if($item->alat->image_url)
+                                        <img src="{{ asset('storage/' . $item->alat->image_url) }}"
+                                             alt="{{ $item->alat->nama }}"
+                                             class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <i class="fas fa-{{ $item->alat->getCategoryIcon() }} text-gray-400 text-xl"></i>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 text-lg">{{ $item->alat->nama }}</h4>
+                                    <p class="text-sm text-gray-600">Kode: {{ $item->alat->kode }}</p>
+                                    <p class="text-sm font-medium text-blue-600">Total dipinjam: {{ $item->jumlah }} unit</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-green-50">
-                                <input type="radio" name="item_conditions[{{ $item->alat_id }}]" value="baik" checked
-                                       class="mr-3 text-green-600">
-                                <div>
-                                    <div class="font-medium text-green-700">Baik</div>
-                                    <div class="text-xs text-gray-500">Kondisi normal</div>
+
+                        <!-- Condition Input Section -->
+                        <div class="bg-white rounded-lg p-4 border">
+                            <h5 class="font-medium text-gray-800 mb-3">Kondisi Pengembalian:</h5>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- BAIK Section -->
+                                <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                                    <div class="flex items-center mb-3">
+                                        <i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-medium text-green-700">Kondisi Baik</div>
+                                            <div class="text-xs text-gray-600">Dapat digunakan kembali</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-sm font-medium text-gray-700">Jumlah:</label>
+                                        <input type="number"
+                                               name="item_conditions[{{ $item->alat_id }}][baik]"
+                                               min="0"
+                                               max="{{ $item->jumlah }}"
+                                               value="{{ $item->jumlah }}"
+                                               class="w-20 px-3 py-1 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                               onchange="updateConditionTotals('{{ $item->alat_id }}', {{ $item->jumlah }})">
+                                        <span class="text-sm text-gray-500">unit</span>
+                                    </div>
                                 </div>
-                            </label>
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-yellow-50">
-                                <input type="radio" name="item_conditions[{{ $item->alat_id }}]" value="rusak_ringan"
-                                       class="mr-3 text-yellow-600">
-                                <div>
-                                    <div class="font-medium text-yellow-700">Rusak Ringan</div>
-                                    <div class="text-xs text-gray-500">Masih bisa diperbaiki</div>
+
+                                <!-- RUSAK Section -->
+                                <div class="border-2 border-red-200 rounded-lg p-4 bg-red-50">
+                                    <div class="flex items-center mb-3">
+                                        <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3"></i>
+                                        <div>
+                                            <div class="font-medium text-red-700">Kondisi Rusak</div>
+                                            <div class="text-xs text-gray-600">Perlu perbaikan/penggantian</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-sm font-medium text-gray-700">Jumlah:</label>
+                                        <input type="number"
+                                               name="item_conditions[{{ $item->alat_id }}][rusak]"
+                                               min="0"
+                                               max="{{ $item->jumlah }}"
+                                               value="0"
+                                               class="w-20 px-3 py-1 border border-red-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                               onchange="updateConditionTotals('{{ $item->alat_id }}', {{ $item->jumlah }})">
+                                        <span class="text-sm text-gray-500">unit</span>
+                                    </div>
                                 </div>
-                            </label>
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-red-50">
-                                <input type="radio" name="item_conditions[{{ $item->alat_id }}]" value="rusak_berat"
-                                       class="mr-3 text-red-600">
-                                <div>
-                                    <div class="font-medium text-red-700">Rusak Berat</div>
-                                    <div class="text-xs text-gray-500">Perlu perbaikan khusus</div>
+                            </div>
+
+                            <!-- Total Validation Display -->
+                            <div class="mt-3 p-2 bg-gray-100 rounded-md">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Total unit yang dikembalikan:</span>
+                                    <span id="total-{{ $item->alat_id }}" class="font-medium">{{ $item->jumlah }}/{{ $item->jumlah }}</span>
                                 </div>
-                            </label>
-                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-red-50">
-                                <input type="radio" name="item_conditions[{{ $item->alat_id }}]" value="hilang"
-                                       class="mr-3 text-red-600">
-                                <div>
-                                    <div class="font-medium text-red-700">Hilang</div>
-                                    <div class="text-xs text-gray-500">Tidak dikembalikan</div>
+                                <div id="error-{{ $item->alat_id }}" class="text-red-600 text-xs mt-1 hidden">
+                                    Total harus sama dengan {{ $item->jumlah }} unit
                                 </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
                     @endforeach
@@ -434,12 +497,12 @@
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeCompleteModal()"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
+                            class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition">
                         Batal
                     </button>
-                    <button type="submit"
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        <i class="fas fa-check mr-2"></i>Selesaikan
+                    <button type="submit" id="submitBtn"
+                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
+                        <i class="fas fa-check mr-2"></i>Selesaikan Peminjaman
                     </button>
                 </div>
             </form>
@@ -487,6 +550,7 @@
         </div>
     </div>
 </div>
+
 <!-- Custom Message Modal -->
 <div id="customMessageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-lg max-w-md w-full">
@@ -532,113 +596,240 @@
 </div>
 @endsection
 
+{{-- ============================================ --}}
+{{-- SCRIPTS SECTION - REPLACE EXISTING SCRIPTS --}}
+{{-- ============================================ --}}
 @section('scripts')
 <script>
+// Global variables
+window.peminjamanFunctions = window.peminjamanFunctions || {};
+
+// Condition totals validation
+function updateConditionTotals(alatId, maxTotal) {
+    const baikInput = document.querySelector(`input[name="item_conditions[${alatId}][baik]"]`);
+    const rusakInput = document.querySelector(`input[name="item_conditions[${alatId}][rusak]"]`);
+    const totalDisplay = document.getElementById(`total-${alatId}`);
+    const errorDisplay = document.getElementById(`error-${alatId}`);
+
+    if (!baikInput || !rusakInput || !totalDisplay || !errorDisplay) {
+        console.error('Required elements not found for alat ID:', alatId);
+        return;
+    }
+
+    const baikValue = parseInt(baikInput.value) || 0;
+    const rusakValue = parseInt(rusakInput.value) || 0;
+    const total = baikValue + rusakValue;
+
+    // Update display
+    totalDisplay.textContent = `${total}/${maxTotal}`;
+    totalDisplay.className = total === maxTotal ? 'font-medium text-green-600' : 'font-medium text-red-600';
+
+    // Show/hide error
+    if (total !== maxTotal) {
+        errorDisplay.classList.remove('hidden');
+        errorDisplay.textContent = total > maxTotal
+            ? `Total tidak boleh melebihi ${maxTotal} unit`
+            : `Total harus sama dengan ${maxTotal} unit`;
+    } else {
+        errorDisplay.classList.add('hidden');
+    }
+
+    // Validate all items
+    validateAllTotals();
+}
+
+function validateAllTotals() {
+    const submitBtn = document.getElementById('submitBtn');
+    if (!submitBtn) return;
+
+    let allValid = true;
+
+    // Check all condition inputs
+    @foreach($peminjaman->items as $item)
+    try {
+        const baikInput{{ $loop->index }} = document.querySelector(`input[name="item_conditions[{{ $item->alat_id }}][baik]"]`);
+        const rusakInput{{ $loop->index }} = document.querySelector(`input[name="item_conditions[{{ $item->alat_id }}][rusak]"]`);
+
+        if (baikInput{{ $loop->index }} && rusakInput{{ $loop->index }}) {
+            const baik{{ $loop->index }} = parseInt(baikInput{{ $loop->index }}.value) || 0;
+            const rusak{{ $loop->index }} = parseInt(rusakInput{{ $loop->index }}.value) || 0;
+            const total{{ $loop->index }} = baik{{ $loop->index }} + rusak{{ $loop->index }};
+
+            if (total{{ $loop->index }} !== {{ $item->jumlah }}) {
+                allValid = false;
+            }
+        }
+    } catch (error) {
+        console.error('Error validating item {{ $loop->index }}:', error);
+        allValid = false;
+    }
+    @endforeach
+
+    // Enable/disable submit button
+    submitBtn.disabled = !allValid;
+    submitBtn.className = allValid
+        ? 'px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center'
+        : 'px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center';
+}
+
+// Status update function - FIXED VERSION
 function updateStatus(peminjamanId, status) {
+    console.log('updateStatus called with:', { peminjamanId, status });
+
+    if (!peminjamanId || !status) {
+        console.error('Missing required parameters');
+        showAlert('error', 'Parameter tidak lengkap');
+        return;
+    }
+
     let message = '';
+    let confirmTitle = '';
+
     switch(status) {
         case 'APPROVED':
             message = 'Apakah Anda yakin ingin menyetujui peminjaman ini?';
+            confirmTitle = 'Setujui Peminjaman';
             break;
         case 'ACTIVE':
             message = 'Apakah Anda yakin ingin menandai peminjaman ini sebagai sudah diambil?';
+            confirmTitle = 'Tandai Sudah Diambil';
             break;
         case 'CANCELLED':
             message = 'Apakah Anda yakin ingin membatalkan peminjaman ini?';
+            confirmTitle = 'Batalkan Peminjaman';
             break;
         default:
             message = 'Apakah Anda yakin ingin mengubah status peminjaman ini?';
+            confirmTitle = 'Ubah Status';
     }
 
-    if (confirm(message)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/peminjaman/${peminjamanId}/status`;
+    if (confirm(`${confirmTitle}\n\n${message}`)) {
+        try {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/peminjaman/${peminjamanId}/status`;
+            form.style.display = 'none';
 
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        form.appendChild(csrfToken);
+            // CSRF Token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
 
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'PUT';
-        form.appendChild(methodInput);
+            // Method
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PUT';
+            form.appendChild(methodInput);
 
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = status;
-        form.appendChild(statusInput);
+            // Status
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = status;
+            form.appendChild(statusInput);
 
-        document.body.appendChild(form);
-        form.submit();
+            // Submit form
+            document.body.appendChild(form);
+            console.log('Submitting form:', form);
+            form.submit();
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            showAlert('error', 'Terjadi kesalahan saat memproses permintaan');
+        }
     }
 }
 
+// Modal functions
 function showCompleteModal(peminjamanId) {
-    document.getElementById('completeModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    console.log('showCompleteModal called:', peminjamanId);
+    const modal = document.getElementById('completeModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Initialize validation
+        setTimeout(validateAllTotals, 100);
+    } else {
+        console.error('Complete modal not found');
+    }
 }
 
 function closeCompleteModal() {
-    document.getElementById('completeModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('completeModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
 }
 
 function showCancelModal(peminjamanId) {
-    document.getElementById('cancelModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    console.log('showCancelModal called:', peminjamanId);
+    const modal = document.getElementById('cancelModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Cancel modal not found');
+    }
 }
 
 function closeCancelModal() {
-    document.getElementById('cancelModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('cancelModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
 }
 
 function deletePeminjaman(peminjamanId) {
-    if (confirm('Apakah Anda yakin ingin menghapus data peminjaman ini? Tindakan ini tidak dapat dibatalkan.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/admin/peminjaman/${peminjamanId}`;
+    console.log('deletePeminjaman called:', peminjamanId);
 
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        form.appendChild(csrfToken);
+    if (!peminjamanId) {
+        showAlert('error', 'ID peminjaman tidak valid');
+        return;
+    }
 
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'DELETE';
-        form.appendChild(methodInput);
+    const confirmMessage = 'Apakah Anda yakin ingin menghapus data peminjaman ini?\n\nTindakan ini tidak dapat dibatalkan.';
 
-        document.body.appendChild(form);
-        form.submit();
+    if (confirm(confirmMessage)) {
+        try {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/peminjaman/${peminjamanId}`;
+            form.style.display = 'none';
+
+            // CSRF Token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
+            // DELETE Method
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+
+            document.body.appendChild(form);
+            form.submit();
+
+        } catch (error) {
+            console.error('Error deleting peminjaman:', error);
+            showAlert('error', 'Terjadi kesalahan saat menghapus data');
+        }
     }
 }
 
-// Close modals when clicking outside
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('bg-opacity-75')) {
-        closeCompleteModal();
-        closeCancelModal();
-    }
-});
-
-// Close modals with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeCompleteModal();
-        closeCancelModal();
-    }
-});
-
 // WhatsApp Communication Functions
 function sendStatusUpdate(type) {
+    console.log('sendStatusUpdate called:', type);
+
     const borrowerPhone = '{{ $peminjaman->noHp }}';
     const borrowerName = '{{ $peminjaman->namaPeminjam }}';
     const trackingUrl = '{{ route("equipment.track", $peminjaman->id) }}';
@@ -680,38 +871,61 @@ function sendStatusUpdate(type) {
         case 'completed':
             message = `Halo ${borrowerName},\n\n✅ *PEMINJAMAN SELESAI*\n\nTerima kasih! Peminjaman alat Anda telah selesai:\n\n🔧 Alat yang Dikembalikan:\n${equipmentList}\n\n📊 *Status:* Lengkap dan Selesai\n\n🙏 Terima kasih telah:\n• Menggunakan fasilitas lab dengan baik\n• Mengembalikan alat tepat waktu\n• Menjaga kondisi alat\n\nKami berharap dapat melayani Anda kembali di masa mendatang.\n\n🔗 Riwayat: ${trackingUrl}\n\nSalam,\nLab Fisika Dasar`;
             break;
+
+        default:
+            console.error('Unknown status update type:', type);
+            showAlert('error', 'Tipe update tidak dikenal');
+            return;
     }
 
-    // Format phone number and open WhatsApp
-    const formattedPhone = borrowerPhone.replace(/^0/, '62');
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    try {
+        // Format phone number and open WhatsApp
+        const formattedPhone = borrowerPhone.replace(/^0/, '62');
+        const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
 
-    // Show success message
-    showAlert('success', 'WhatsApp terbuka! Pesan siap dikirim.');
+        // Show success message
+        showAlert('success', 'WhatsApp terbuka! Pesan siap dikirim.');
+    } catch (error) {
+        console.error('Error opening WhatsApp:', error);
+        showAlert('error', 'Gagal membuka WhatsApp');
+    }
 }
 
 function sendCustomMessage() {
-    document.getElementById('customMessageModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    const modal = document.getElementById('customMessageModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeCustomMessage() {
-    document.getElementById('customMessageModal').classList.add('hidden');
-    document.getElementById('customMessageText').value = '';
-    document.body.style.overflow = 'auto';
+    const modal = document.getElementById('customMessageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.getElementById('customMessageText').value = '';
+        document.body.style.overflow = 'auto';
+    }
 }
 
 function sendMessage() {
-    const message = document.getElementById('customMessageText').value;
-    if (!message.trim()) {
-        alert('Silakan tulis pesan terlebih dahulu');
+    const messageInput = document.getElementById('customMessageText');
+    if (!messageInput) {
+        showAlert('error', 'Input pesan tidak ditemukan');
+        return;
+    }
+
+    const message = messageInput.value.trim();
+    if (!message) {
+        showAlert('warning', 'Silakan tulis pesan terlebih dahulu');
         return;
     }
 
     const borrowerPhone = '{{ $peminjaman->noHp }}';
     const borrowerName = '{{ $peminjaman->namaPeminjam }}';
-    const includeTracking = document.getElementById('includeTrackingLink').checked;
+    const includeTrackingCheckbox = document.getElementById('includeTrackingLink');
+    const includeTracking = includeTrackingCheckbox ? includeTrackingCheckbox.checked : true;
     const trackingUrl = '{{ route("equipment.track", $peminjaman->id) }}';
 
     let fullMessage = `Halo ${borrowerName},\n\n${message}`;
@@ -722,27 +936,49 @@ function sendMessage() {
 
     fullMessage += `\n\nSalam,\nAdmin Laboratorium Fisika Dasar`;
 
-    const formattedPhone = borrowerPhone.replace(/^0/, '62');
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(fullMessage)}`;
-    window.open(whatsappUrl, '_blank');
+    try {
+        const formattedPhone = borrowerPhone.replace(/^0/, '62');
+        const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(fullMessage)}`;
+        window.open(whatsappUrl, '_blank');
 
-    closeCustomMessage();
-    showAlert('success', 'WhatsApp terbuka! Pesan custom siap dikirim.');
+        closeCustomMessage();
+        showAlert('success', 'WhatsApp terbuka! Pesan custom siap dikirim.');
+    } catch (error) {
+        console.error('Error sending custom message:', error);
+        showAlert('error', 'Gagal mengirim pesan');
+    }
 }
 
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showAlert('success', 'Link berhasil disalin ke clipboard!');
-    }).catch(err => {
-        // Fallback for older browsers
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showAlert('success', 'Link berhasil disalin ke clipboard!');
+        }).catch(err => {
+            console.error('Clipboard API failed:', err);
+            fallbackCopyToClipboard(text);
+        });
+    } else {
+        fallbackCopyToClipboard(text);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    try {
         const textArea = document.createElement('textarea');
         textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
         document.body.appendChild(textArea);
+        textArea.focus();
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
         showAlert('success', 'Link berhasil disalin!');
-    });
+    } catch (error) {
+        console.error('Fallback copy failed:', error);
+        showAlert('error', 'Gagal menyalin link');
+    }
 }
 
 function getEquipmentListText() {
@@ -789,22 +1025,76 @@ function showAlert(type, message) {
     // Animate out and remove
     setTimeout(() => {
         alertElement.classList.add('translate-x-full', 'opacity-0');
-        setTimeout(() => alertElement.remove(), 300);
+        setTimeout(() => {
+            if (alertElement.parentNode) {
+                alertElement.remove();
+            }
+        }, 300);
     }, 3000);
 }
 
-// Close modal when clicking outside
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Initializing peminjaman functions');
+
+    // Initialize validation if modal exists
+    if (document.getElementById('completeModal')) {
+        validateAllTotals();
+    }
+
+    // Test function availability
+    console.log('Functions available:', {
+        updateStatus: typeof updateStatus,
+        showCompleteModal: typeof showCompleteModal,
+        deletePeminjaman: typeof deletePeminjaman
+    });
+});
+
+// Close modals when clicking outside
 document.addEventListener('click', function(e) {
-    if (e.target.id === 'customMessageModal') {
+    if (e.target.classList.contains('bg-opacity-75')) {
+        closeCompleteModal();
+        closeCancelModal();
         closeCustomMessage();
     }
 });
 
-// Close modal with Escape key
+// Close modals with Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+        closeCompleteModal();
+        closeCancelModal();
         closeCustomMessage();
     }
 });
+
+// Prevent form submission on invalid totals
+document.addEventListener('submit', function(e) {
+    if (e.target.id === 'completeForm') {
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn && submitBtn.disabled) {
+            e.preventDefault();
+            showAlert('warning', 'Mohon periksa kembali total kondisi setiap alat');
+            return false;
+        }
+    }
+});
+
+// Export functions to global scope for onclick handlers
+window.updateStatus = updateStatus;
+window.showCompleteModal = showCompleteModal;
+window.closeCompleteModal = closeCompleteModal;
+window.showCancelModal = showCancelModal;
+window.closeCancelModal = closeCancelModal;
+window.deletePeminjaman = deletePeminjaman;
+window.sendStatusUpdate = sendStatusUpdate;
+window.sendCustomMessage = sendCustomMessage;
+window.closeCustomMessage = closeCustomMessage;
+window.sendMessage = sendMessage;
+window.copyToClipboard = copyToClipboard;
+window.updateConditionTotals = updateConditionTotals;
+window.validateAllTotals = validateAllTotals;
+
+console.log('All peminjaman functions loaded successfully');
 </script>
 @endsection

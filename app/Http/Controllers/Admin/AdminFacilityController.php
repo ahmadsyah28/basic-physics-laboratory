@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Facility;
+use App\Models\Gambar; // TAMBAHAN
 use Illuminate\Support\Facades\Storage;
 
 class AdminFacilityController extends Controller
@@ -52,56 +53,79 @@ class AdminFacilityController extends Controller
         $facility->title = $request->title;
         $facility->description = $request->description;
         $facility->facility_points = $request->facility_points;
+
         // Handle existing images
         $existingImages = $facility->images ?? [];
 
+        // Pastikan $existingImages adalah array
         if (is_string($existingImages)) {
-        $existingImages = json_decode($existingImages, true) ?? [];
+            $existingImages = json_decode($existingImages, true) ?? [];
         }
 
-        // Delete selected images
+        // TAMBAHAN: Delete selected images dari storage DAN tabel gambar
         if ($request->delete_images) {
             foreach ($request->delete_images as $imageToDelete) {
                 if (($key = array_search($imageToDelete, $existingImages)) !== false) {
                     unset($existingImages[$key]);
+
+                    // Hapus dari storage
                     if (Storage::disk('public')->exists($imageToDelete)) {
                         Storage::disk('public')->delete($imageToDelete);
                     }
+
+                    // TAMBAHAN: Hapus dari tabel gambar
+                    Gambar::where('url', $imageToDelete)
+                          ->where('kategori', 'FASILITAS')
+                          ->delete();
                 }
             }
             $existingImages = array_values($existingImages); // Re-index array
         }
 
-        // Handle new image uploads
+        // TAMBAHAN: Handle new image uploads dan simpan ke tabel gambar
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('facilities', 'public');
                 $existingImages[] = $path;
+
+                // TAMBAHAN: Simpan ke tabel gambar
+                Gambar::create([
+                    'facility_id' => $facility->id ?? null,
+                    'url' => $path,
+                    'kategori' => 'FASILITAS'
+                ]);
             }
         }
 
         $facility->images = $existingImages;
         $facility->save();
 
+        // TAMBAHAN: Update facility_id di tabel gambar jika facility baru dibuat
+        if ($facility->wasRecentlyCreated) {
+            Gambar::where('kategori', 'FASILITAS')
+                  ->whereNull('facility_id')
+                  ->update(['facility_id' => $facility->id]);
+        }
+
         return redirect()->route('admin.facilities.index')->with('success', 'Fasilitas berhasil diperbarui!');
     }
 
     private function createDefaultFacility()
-{
-    return Facility::create([
-        'title' => 'Fasilitas Laboratorium Fisika Dasar',
-        'description' => 'Laboratorium Fisika Dasar dilengkapi dengan berbagai fasilitas modern untuk mendukung kegiatan praktikum dan pembelajaran mahasiswa.',
-        'facility_points' => [  // LANGSUNG ARRAY, bukan json_encode
-            'Ruang laboratorium yang luas dan nyaman',
-            'Peralatan praktikum lengkap dan modern',
-            'Kapasitas hingga 40 mahasiswa',
-            'Sistem ventilasi dan pencahayaan yang baik',
-            'Area demonstrasi untuk dosen',
-            'Meja praktikum yang ergonomis',
-            'Fasilitas penyimpanan alat yang aman',
-            'Akses internet untuk penelusuran data'
-        ],
-        'images' => []  // LANGSUNG ARRAY, bukan json_encode
-    ]);
-}
+    {
+        return Facility::create([
+            'title' => 'Fasilitas Laboratorium Fisika Dasar',
+            'description' => 'Laboratorium Fisika Dasar dilengkapi dengan berbagai fasilitas modern untuk mendukung kegiatan praktikum dan pembelajaran mahasiswa.',
+            'facility_points' => [
+                'Ruang laboratorium yang luas dan nyaman',
+                'Peralatan praktikum lengkap dan modern',
+                'Kapasitas hingga 40 mahasiswa',
+                'Sistem ventilasi dan pencahayaan yang baik',
+                'Area demonstrasi untuk dosen',
+                'Meja praktikum yang ergonomis',
+                'Fasilitas penyimpanan alat yang aman',
+                'Akses internet untuk penelusuran data'
+            ],
+            'images' => []
+        ]);
+    }
 }

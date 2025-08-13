@@ -6,95 +6,121 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class AdminUserController extends Controller
 {
     /**
-     * Display a listing of the users.
+     * Display a listing of admin users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Super admin can see all users, regular admin can only see non-super-admin users
-        if (Auth::user()->role === 'super_admin') {
-            $users = User::all();
-        } else {
-            $users = User::where('role', '!=', 'super_admin')->get();
+        $query = User::where('role', 'admin'); // Only show regular admins
+
+        // Search functionality
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
         }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // Append query parameters to pagination links
+        $users->appends($request->query());
 
         return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for creating a new user.
+     * Show the form for creating a new admin user.
      */
     public function create()
     {
-        // Only super admin can create admin users
-        if (Auth::user()->role !== 'super_admin') {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak memiliki izin untuk membuat pengguna admin');
-        }
-
         return view('admin.users.create');
     }
 
     /**
-     * Store a newly created user in storage.
+     * Store a newly created admin user in storage.
      */
     public function store(Request $request)
     {
-        // Only super admin can create admin users
-        if (Auth::user()->role !== 'super_admin') {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak memiliki izin untuk membuat pengguna admin');
-        }
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => [
-                'required',
-                Rule::in(['admin', 'super_admin']),
-            ],
+        ], [
+            'name.required' => 'Nama wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna admin berhasil dibuat');
+        try {
+            User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'admin', // Always create as regular admin
+                'email_verified_at' => now(),
+            ]);
+
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Admin berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menambahkan admin.')
+                ->withInput();
+        }
     }
 
     /**
-     * Show the form for editing the specified user.
+     * Display the specified admin user.
+     */
+    public function show(User $user)
+    {
+        // Only allow viewing regular admin users
+        if ($user->role !== 'admin') {
+            abort(404);
+        }
+
+        return view('admin.users.show', compact('user'));
+    }
+
+    /**
+     * Show the form for editing the specified admin user.
      */
     public function edit(User $user)
     {
-        // Regular admin cannot edit super admin
-        if (Auth::user()->role !== 'super_admin' && $user->role === 'super_admin') {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak memiliki izin untuk mengedit super admin');
+        // Only allow editing regular admin users
+        if ($user->role !== 'admin') {
+            abort(404);
         }
 
         return view('admin.users.edit', compact('user'));
     }
 
     /**
-     * Update the specified user in storage.
+     * Update the specified admin user in storage.
      */
     public function update(Request $request, User $user)
     {
-        // Regular admin cannot update super admin
-        if (Auth::user()->role !== 'super_admin' && $user->role === 'super_admin') {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak memiliki izin untuk memperbarui super admin');
+        // Only allow updating regular admin users
+        if ($user->role !== 'admin') {
+            abort(404);
         }
 
         $rules = [
@@ -108,62 +134,69 @@ class AdminUserController extends Controller
             ],
         ];
 
-        // Only super admin can change roles
-        if (Auth::user()->role === 'super_admin') {
-            $rules['role'] = [
-                'required',
-                Rule::in(['admin', 'super_admin']),
-            ];
-        }
+        $messages = [
+            'name.required' => 'Nama wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
+        ];
 
         // Password is optional on update
         if ($request->filled('password')) {
             $rules['password'] = 'string|min:8|confirmed';
+            $messages['password.min'] = 'Password minimal 8 karakter.';
+            $messages['password.confirmed'] = 'Konfirmasi password tidak cocok.';
         }
 
-        $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules, $messages);
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-        ];
-
-        // Only super admin can change roles
-        if (Auth::user()->role === 'super_admin' && $request->has('role')) {
-            $data['role'] = $request->role;
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        // Update password if provided
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+        try {
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+            ];
+
+            // Only update password if provided
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
+
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Admin berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat memperbarui admin.')
+                ->withInput();
         }
-
-        $user->update($data);
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna admin berhasil diperbarui');
     }
 
     /**
-     * Remove the specified user from storage.
+     * Remove the specified admin user from storage.
      */
     public function destroy(User $user)
     {
-        // Cannot delete yourself
-        if ($user->id === Auth::id()) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri');
+        // Only allow deleting regular admin users
+        if ($user->role !== 'admin') {
+            abort(404);
         }
 
-        // Regular admin cannot delete super admin
-        if (Auth::user()->role !== 'super_admin' && $user->role === 'super_admin') {
+        try {
+            $userName = $user->name;
+            $user->delete();
+
             return redirect()->route('admin.users.index')
-                ->with('error', 'Anda tidak memiliki izin untuk menghapus super admin');
+                ->with('success', "Admin {$userName} berhasil dihapus!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus admin.');
         }
-
-        $user->delete();
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'Pengguna admin berhasil dihapus');
     }
 }

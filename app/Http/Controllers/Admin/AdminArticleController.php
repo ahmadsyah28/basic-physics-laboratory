@@ -1,5 +1,6 @@
 <?php
-// app/Http/Controllers/Admin/AdminArticleController.php
+
+// File: app/Http/Controllers/Admin/AdminArticleController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -59,9 +60,10 @@ class AdminArticleController extends Controller
                 $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 $path = $image->storeAs('article', $filename, 'public');
 
+                // FIXED: Simpan path tanpa prefix 'storage/' karena akan ditangani di accessor
                 Gambar::create([
                     'acara_id' => $artikel->id,
-                    'url' => 'storage/' . $path,
+                    'url' => $path, // CHANGED: dari 'storage/' . $path menjadi $path saja
                     'kategori' => 'ACARA'
                 ]);
             }
@@ -107,9 +109,10 @@ class AdminArticleController extends Controller
                 $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
                 $path = $image->storeAs('article', $filename, 'public');
 
+                // FIXED: Simpan path tanpa prefix 'storage/' karena akan ditangani di accessor
                 Gambar::create([
                     'acara_id' => $article->id,
-                    'url' => 'storage/' . $path,
+                    'url' => $path, // CHANGED: dari 'storage/' . $path menjadi $path saja
                     'kategori' => 'ACARA'
                 ]);
             }
@@ -123,7 +126,14 @@ class AdminArticleController extends Controller
     {
         // Delete associated images from storage
         foreach ($article->gambar as $gambar) {
-            $imagePath = str_replace('storage/', '', $gambar->url);
+            // FIXED: Handle different URL formats
+            $imagePath = $gambar->url;
+
+            // Remove 'storage/' prefix if exists
+            if (str_starts_with($imagePath, 'storage/')) {
+                $imagePath = str_replace('storage/', '', $imagePath);
+            }
+
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
@@ -138,8 +148,14 @@ class AdminArticleController extends Controller
 
     public function destroyImage(Gambar $gambar)
     {
-        // Delete image from storage
-        $imagePath = str_replace('storage/', '', $gambar->url);
+        // FIXED: Handle different URL formats
+        $imagePath = $gambar->url;
+
+        // Remove 'storage/' prefix if exists
+        if (str_starts_with($imagePath, 'storage/')) {
+            $imagePath = str_replace('storage/', '', $imagePath);
+        }
+
         if (Storage::disk('public')->exists($imagePath)) {
             Storage::disk('public')->delete($imagePath);
         }

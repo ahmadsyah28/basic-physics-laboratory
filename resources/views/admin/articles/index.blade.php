@@ -79,29 +79,57 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($article->gambarUtama)
-                                    <img src="{{ asset($article->gambarUtama->url) }}"
-                                         alt="Gambar artikel"
-                                         class="h-12 w-12 rounded-lg object-cover">
+                                    {{-- FIXED: Gunakan accessor url_lengkap yang sudah diperbaiki --}}
+                                    <div class="relative group">
+                                        <img src="{{ $article->gambarUtama->url_lengkap }}"
+                                             alt="Gambar artikel"
+                                             class="h-12 w-12 rounded-lg object-cover border border-gray-200"
+                                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder.jpg') }}'; this.className='h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center';">
+
+                                        {{-- Tooltip untuk debug --}}
+                                        <div class="absolute bottom-0 left-0 transform translate-y-full bg-black text-white text-xs rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
+                                            {{ $article->gambarUtama->url }}
+                                        </div>
+                                    </div>
                                 @else
-                                    <div class="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <div class="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center border border-gray-300">
                                         <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                @endif
+
+                                {{-- TAMBAHAN: Info gambar count --}}
+                                @if($article->gambar && $article->gambar->count() > 1)
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        +{{ $article->gambar->count() - 1 }} lainnya
                                     </div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
                                     <a href="{{ route('admin.articles.show', $article) }}"
-                                       class="text-blue-600 hover:text-blue-900">
+                                       class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-100 transition"
+                                       title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ route('admin.articles.edit', $article) }}"
-                                       class="text-green-600 hover:text-green-900">
+                                       class="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-100 transition"
+                                       title="Edit Artikel">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button onclick="deleteArticle('{{ $article->id }}')"
-                                            class="text-red-600 hover:text-red-900">
+                                            class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-100 transition"
+                                            title="Hapus Artikel">
                                         <i class="fas fa-trash"></i>
                                     </button>
+
+                                    {{-- TAMBAHAN: Quick preview gambar --}}
+                                    @if($article->gambarUtama)
+                                    <button onclick="previewImage('{{ $article->gambarUtama->url_lengkap }}', '{{ $article->nama_acara }}')"
+                                            class="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-100 transition"
+                                            title="Preview Gambar">
+                                        <i class="fas fa-search-plus"></i>
+                                    </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -148,6 +176,20 @@
         </div>
     </div>
 </div>
+
+{{-- TAMBAHAN: Image Preview Modal --}}
+<div id="imagePreviewModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-[90vh] mx-auto">
+        <button onclick="closePreviewModal()"
+                class="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="previewImage" src="" alt="" class="max-w-full max-h-full rounded-lg shadow-2xl">
+        <div id="previewTitle" class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white p-4 rounded-b-lg">
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
@@ -160,5 +202,45 @@ function deleteArticle(id) {
 function closeDeleteModal() {
     document.getElementById('deleteModal').classList.add('hidden');
 }
+
+// TAMBAHAN: Image preview functions
+function previewImage(imageSrc, title) {
+    document.getElementById('previewImage').src = imageSrc;
+    document.getElementById('previewTitle').textContent = title;
+    document.getElementById('imagePreviewModal').classList.remove('hidden');
+}
+
+function closePreviewModal() {
+    document.getElementById('imagePreviewModal').classList.add('hidden');
+}
+
+// Close modal on outside click
+document.getElementById('imagePreviewModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePreviewModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteModal();
+        closePreviewModal();
+    }
+});
+
+// TAMBAHAN: Debug image loading errors
+document.addEventListener('DOMContentLoaded', function() {
+    const images = document.querySelectorAll('img[src]');
+    images.forEach(img => {
+        img.addEventListener('error', function() {
+            console.log('Image failed to load:', this.src);
+        });
+
+        img.addEventListener('load', function() {
+            console.log('Image loaded successfully:', this.src);
+        });
+    });
+});
 </script>
 @endsection

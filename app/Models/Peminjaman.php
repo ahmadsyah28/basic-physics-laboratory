@@ -336,22 +336,36 @@ class Peminjaman extends Model
      * Complete the loan (return items)
      */
     public function complete($itemConditions = [])
-    {
-        if ($this->status === self::STATUS_ACTIVE) {
-            $this->status = self::STATUS_COMPLETED;
-            $this->kondisi_pengembalian = json_encode($itemConditions);
-            $this->save();
+{
+    if ($this->status === self::STATUS_ACTIVE) {
+        // 1. Update status peminjaman
+        $this->status = self::STATUS_COMPLETED;
 
-            // Update stock for each item
-            foreach ($this->items as $item) {
-                $kondisi = $itemConditions[$item->alat_id] ?? 'baik';
-                $item->alat->returnItem($item->jumlah, $kondisi);
+        // 2. Simpan kondisi pengembalian sebagai JSON (format baru)
+        $this->kondisi_pengembalian = json_encode($itemConditions);
+
+        // 3. Save peminjaman
+        $this->save();
+
+        // 4. Update stok untuk setiap item dengan partial conditions
+        foreach ($this->items as $item) {
+            $conditions = $itemConditions[$item->alat_id] ?? [];
+            $baikQty = (int)($conditions['baik'] ?? $item->jumlah);
+            $rusakQty = (int)($conditions['rusak'] ?? 0);
+
+            // Validasi total
+            if ($baikQty + $rusakQty !== $item->jumlah) {
+                continue; // Skip this item if validation fails
             }
 
-            return true;
+            // Return items with partial conditions
+            $item->alat->returnItemPartial($baikQty, $rusakQty);
         }
-        return false;
+
+        return true;
     }
+    return false;
+}
 
     /**
      * Cancel the loan

@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+        <div class="    bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
             <div class="flex items-center">
                 <div class="p-3 bg-red-100 rounded-full">
                     <i class="fas fa-wrench text-red-600"></i>
@@ -137,7 +137,7 @@
             </div>
         </div>
 
-        
+
     </div>
 
     <!-- Equipment Grid -->
